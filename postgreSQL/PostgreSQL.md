@@ -4,6 +4,9 @@
 
 PostgreSQL 是一种开源的关系型数据库管理系统，它具有高度的可扩展性、稳定性和安全性。
 
+Linux安装成功
+![Alt text](assets/PostgreSQL/image-8.png)
+
 ## 二、 查询
 
 ### 1. 图形化SQL查询入口
@@ -20,12 +23,28 @@ PostgreSQL 是一种开源的关系型数据库管理系统，它具有高度的
 查询实例：
 ![Alt text](assets/PostgreSQL/image-3.png)
 
+linux下的命令行查询入口：
+![Alt text](assets/PostgreSQL/image-9.png)
+
+
 ## 三、 远程访问
 
 ### 1. 查看主机ip地址
 
 如图所示：
-![Alt text](assets/PostgreSQL/image-4.png)
+
+- 主机ip
+![Alt text](assets/PostgreSQL/image-4.png){height=500}
+- 虚拟机ping主机ip（-c 限定数量，不然会ping不停）
+![Alt text](assets/PostgreSQL/image-5.png){width=500}
+- 虚拟机ping
+![Alt text](assets/PostgreSQL/image-6.png){width=500}
+- 主机ping虚拟机ip
+![Alt text](assets/PostgreSQL/image-7.png)
+
+### 2. 
+
+
 
 在 PostgreSQL 中，我们可以使用 SQL 语句来创建、修改和删除数据库。以下是一些常用的 SQL 命令：
 

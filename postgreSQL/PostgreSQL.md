@@ -24,6 +24,8 @@ PostgreSQL 是一种开源的关系型数据库管理系统，它具有高度的
 
 ### 1. 查看主机ip地址
 
+如图所示：
+![Alt text](assets/PostgreSQL/image-4.png)
 
 在 PostgreSQL 中，我们可以使用 SQL 语句来创建、修改和删除数据库。以下是一些常用的 SQL 命令：
 

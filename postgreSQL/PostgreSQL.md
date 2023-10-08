@@ -5,7 +5,47 @@
 PostgreSQL 是一种开源的关系型数据库管理系统，它具有高度的可扩展性、稳定性和安全性。
 
 Linux安装成功
-![Alt text](assets/PostgreSQL/image-8.png)
+
+```linux
+ljt@ljt-virtual-machine:~/Desktop$ apt show postgresql
+Package: postgresql
+Version: 16+255.pgdg22.04+1
+Priority: optional
+Section: database
+Source: postgresql-common (255.pgdg22.04+1)
+Maintainer: Debian PostgreSQL Maintainers <team+postgresql@tracker.debian.org>
+Installed-Size: 73.7 kB
+Depends: postgresql-16
+Suggests: postgresql-doc
+Download-Size: 68.7 kB
+APT-Manual-Installed: yes
+APT-Sources: https://apt.postgresql.org/pub/repos/apt jammy-pgdg/main amd64 Packages
+Description: object-relational SQL database (supported version)
+ This metapackage always depends on the currently supported PostgreSQL
+ database server version.
+ .
+ PostgreSQL is a fully featured object-relational database management
+ system.  It supports a large part of the SQL standard and is designed
+ to be extensible by users in many aspects.  Some of the features are:
+ ACID transactions, foreign keys, views, sequences, subqueries,
+ triggers, user-defined types and functions, outer joins, multiversion
+ concurrency control.  Graphical user interfaces and bindings for many
+ programming languages are available as well.
+
+N: There is 1 additional record. Please use the '-a' switch to see it
+```
+
+- 配置文件路径: `/etc/postgresql-common/createcluster.conf`
+- systemd的服务软连接: `/etc/systemd/system/multi-user.target.wants/postgresql.service → /lib/systemd/system/postgresql.service`
+- 数据目录: `/var/lib/postgresql/16/main`
+- 日志文件: `/var/log/postgresql/postgresql-16-main.log`
+- 特殊的数据库用户: `postgres`
+
+使用 `psql` 工具通过连接 PostgreSQL 数据库并且打印它的版本来验证安装：
+
+```text
+sudo -u postgres psql -c "SELECT version();"
+```
 
 ### 使用技巧
 
@@ -135,7 +175,46 @@ Linux安装成功
     postgres=# 
     ```
 
-11. 
+11. 尝试登录其他数据库
+
+    1. 先尝试登录初始化的数据库`template1`：
+
+        ```linux
+        ljt@ljt-virtual-machine:~/Desktop$ psql -U my_user -d template1
+        Password for user my_user: 
+        psql (16.0 (Ubuntu 16.0-1.pgdg22.04+1))
+        Type "help" for help.
+
+        template1=# \q
+        ljt@ljt-virtual-machine:~/Desktop$ 
+        ```
+
+        可以看到，登录成功。
+        也可以使用`-h`参数指定主机地址，如下：
+
+        ```linux
+        ljt@ljt-virtual-machine:~/Desktop$ psql -U my_user -h 127.0.0.1 -d template1
+        Password for user my_user: 
+        psql (16.0 (Ubuntu 16.0-1.pgdg22.04+1))
+        SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
+        Type "help" for help.
+
+        template1=# 
+        ```
+
+    2. **但是要注意：初始化的数据库template0是不允许登录的：**
+
+        ```linux
+        ljt@ljt-virtual-machine:~/Desktop$ psql -U my_user -h 127.0.0.1 -d template0
+        Password for user my_user: 
+        psql: error: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database "template0" is not currently accepting connections
+        ljt@ljt-virtual-machine:~/Desktop$ psql -U my_user -d template0
+        Password for user my_user: 
+        psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  database "template0" is not currently accepting connections
+        ```
+
+12. 手册（`man psql`）和 [文档](https://www.postgresql.org/docs/) 也非常有用
+    ![Alt text](assets/PostgreSQL/image-19.png){width=500}
 
 ## 二、 查询
 
@@ -155,7 +234,6 @@ Linux安装成功
 
 linux下的命令行查询入口：
 ![Alt text](assets/PostgreSQL/image-9.png)
-
 
 ## 三、 远程访问
 

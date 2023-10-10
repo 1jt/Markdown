@@ -131,5 +131,6 @@
 
       ![Alt text](assets/Linux/image-30.png)
    3. **tar**
+      ![Alt text](assets/Linux/image-31.png)
 
 ## s三.组管理和权限管理

@@ -250,7 +250,7 @@ linux下的命令行查询入口：
 - 主机ping虚拟机ip
 ![Alt text](assets/PostgreSQL/image-7.png)
 
-### 2. 
+### 2. 认证方式与远程连接
 
 
 

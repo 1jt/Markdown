@@ -149,7 +149,9 @@ sudo -u postgres psql -c "SELECT version();"
 10. 重新尝试登录
 
     直接指定用户名进行登录
+
     ![Alt text](assets/PostgreSQL/image-18.png)
+    
     会提示数据库不存在
     **注意**：我们必须指定一个数据库（默认情况下，它将尝试将你连接到与登录的用户名相同的数据库）。
     因此我们就用`-d`参数指定数据库，如下：

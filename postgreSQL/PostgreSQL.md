@@ -49,7 +49,23 @@ sudo -u postgres psql -c "SELECT version();"
 
 ## 二、使用技巧
 
-### 1. Linux下的使用技巧（Ubuntu）
+### 1. Windows下的使用技巧
+
+#### 1. 图形化SQL查询入口
+
+如图所示：
+![PostgreSQL](assets/PostgreSQL/image.png){width=500}
+查询实例：
+![Alt text](assets/PostgreSQL/image-1.png){width=500}
+
+#### 2. 命令行SQL查询入口
+
+如图所示：
+![Alt text](assets/PostgreSQL/image-2.png)
+查询实例：
+![Alt text](assets/PostgreSQL/image-3.png)
+
+### 2. Linux下的使用技巧（Ubuntu）
 
 1. 通过执行以下命令来检查 PostgreSQL 是否正在运行：
 
@@ -401,24 +417,18 @@ host    all             all             0.0.0.0/0                 md5
 
 **注意**：Linux的Navicat下载中文网站不要下载英文网站，会显示没有学生权益
 
-## 四、查询
+## 四、基本使用
 
-### 1. 图形化SQL查询入口
+### 1.数据库的操作（和使用技巧类似）
 
-如图所示：
-![PostgreSQL](assets/PostgreSQL/image.png){width=500}
-查询实例：
-![Alt text](assets/PostgreSQL/image-1.png){width=500}
+#### 1.登录
 
-### 2. 命令行SQL查询入口
+```shell
 
-如图所示：
-![Alt text](assets/PostgreSQL/image-2.png)
-查询实例：
-![Alt text](assets/PostgreSQL/image-3.png)
+```
 
-linux下的命令行查询入口：
-![Alt text](assets/PostgreSQL/image-9.png)
+
+
 在 PostgreSQL 中，我们可以使用 SQL 语句来创建、修改和删除数据库。以下是一些常用的 SQL 命令：
 
 - `CREATE DATABASE dbname;`：创建一个名为 `dbname` 的数据库。

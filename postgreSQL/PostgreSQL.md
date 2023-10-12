@@ -307,6 +307,7 @@ host    all             all             0.0.0.0/0               md5
 注意：这个路径中的“16”是PostgreSQL主版本号，请与实际情况保持一致
 
 在这个配置文件中，可以看到下面的内容：
+修改监听地址
 
 ```shell
 # - Connection Settings -
@@ -330,6 +331,11 @@ max_connections = 100			# (change requires restart)
 ##### 3.修改防火墙，允许端口连接
 
 从上一小节可以看到访问数据库的默认端口是5432，请[修改防火墙允许访问](https://zhuanlan.zhihu.com/p/571124400#:~:text=1.%E6%89%A7%E8%A1%8C%20ufw%20allow%2022%20%E5%91%BD%E4%BB%A4%E5%BC%80%E6%94%BE%E6%8C%87%E5%AE%9A%E7%AB%AF%E5%8F%A3%EF%BC%8C%E8%BF%99%E9%87%8C%E4%BB%A5SSH%E4%B8%BA%E4%BE%8B%E3%80%82%20root%40zq-virtual-machine%3A%2Fhome%2Fzq%23%20ufw,allow%2022%20Rule%20added%20Rule%20added%20%28v6%29%202.%E4%B9%9F%E5%8F%AF%E4%BB%A5%E5%85%81%E8%AE%B8%E4%BB%8E%E7%89%B9%E5%AE%9A%E4%B8%BB%E6%9C%BA%E6%88%96%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E7%AB%AF%E5%8F%A3%EF%BC%8C%E7%B1%BB%E4%BC%BC%E4%BA%8E%E7%BD%91%E7%BB%9C%E4%B8%8A%E7%9A%84%E9%AB%98%E7%BA%A7ACL%E4%B8%AD%E7%9A%84rule%E3%80%82)（我自己没改）。
+
+```shell
+sudo firewall-cmd --add-port=5432/tcp --permanent
+sudo firewall-cmd --reload
+```
 
 修改完配置文件，修改完防火墙，**重启**PostGreSQL服务后，检查服务与端口是否启动成功：
 
@@ -359,10 +365,43 @@ ljt@ljt-virtual-machine:/etc/postgresql/16/main$
 
 ### 3. Windows下的配置
 
-下载中文网站不要下载英文网站，会显示没有学生权益
+#### 1.打开postgresql安装目录的data子目录
 
+找到`pg_hba.conf`文件
 
-## 二、 查询
+![Alt text](assets/PostgreSQL/image-22.png){width=500}
+
+#### 2.修改配置文件
+
+在IPV4 local connections下面添加一行
+
+```shell
+host    all             all             0.0.0.0/0                 md5
+```
+
+![Alt text](assets/PostgreSQL/image-23.png)
+
+#### 3.重启服务
+
+(虽然亲测不重启也可以)
+
+![Alt text](assets/PostgreSQL/image-25.png)
+
+![Alt text](assets/PostgreSQL/image-26.png)
+
+#### 4.设置防火墙
+
+亲测不设置或者不关闭也没事
+
+![Alt text](assets/PostgreSQL/image-27.png){width=500}
+
+#### 5.尝试重新连接
+
+![Alt text](assets/PostgreSQL/image-24.png){width=350}
+
+**注意**：Linux的Navicat下载中文网站不要下载英文网站，会显示没有学生权益
+
+## 四、查询
 
 ### 1. 图形化SQL查询入口
 

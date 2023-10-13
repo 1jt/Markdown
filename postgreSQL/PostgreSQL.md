@@ -2,11 +2,11 @@
 
 ## 一、介绍
 
-PostgreSQL 是一种开源的关系型数据库管理系统，它具有高度的可扩展性、稳定性和安全性。
+PostgreSQL是一种开源的关系型数据库管理系统，它具有高度的可扩展性、稳定性和安全性。它支持大部分的SQL标准，并且被设计成可以被用户在许多方面进行扩展。它支持ACID事务、外键、视图、序列、子查询、触发器、用户定义类型和函数、外连接、多版本并发控制等特性。此外，PostgreSQL还提供了许多图形用户界面和多种编程语言的绑定。它是一个功能齐全的面向对象的关系型数据库管理系统，适用于各种规模的应用程序。
 
-Linux安装成功
+**Linux安装成功：**
 
-```linux
+```shell
 ljt@ljt-virtual-machine:~/Desktop$ apt show postgresql
 Package: postgresql
 Version: 16+255.pgdg22.04+1
@@ -47,12 +47,30 @@ N: There is 1 additional record. Please use the '-a' switch to see it
 sudo -u postgres psql -c "SELECT version();"
 ```
 
-### 使用技巧
+## 二、使用技巧
+
+### 1. Windows下的使用技巧
+
+#### 1. 图形化SQL查询入口
+
+如图所示：
+![PostgreSQL](assets/PostgreSQL/image.png){width=500}
+查询实例：
+![Alt text](assets/PostgreSQL/image-1.png){width=500}
+
+#### 2. 命令行SQL查询入口
+
+如图所示：
+![Alt text](assets/PostgreSQL/image-2.png)
+查询实例：
+![Alt text](assets/PostgreSQL/image-3.png)
+
+### 2. Linux下的使用技巧（Ubuntu）
 
 1. 通过执行以下命令来检查 PostgreSQL 是否正在运行：
 
-   ```text
-   service postgresql status
+    ```text
+    service postgresql status
     ```
 
     ![Alt text](assets/PostgreSQL/image-11.png)
@@ -154,7 +172,7 @@ sudo -u postgres psql -c "SELECT version();"
     **注意**：我们必须指定一个数据库（默认情况下，它将尝试将你连接到与登录的用户名相同的数据库）。
     因此我们就用`-d`参数指定数据库，如下：
 
-    ```linux
+    ```shell
     postgres@ljt-virtual-machine:/etc/postgresql/16/main$ psql -U my_user -d postgres
     Password for user my_user: 
     psql (16.0 (Ubuntu 16.0-1.pgdg22.04+1))
@@ -165,7 +183,7 @@ sudo -u postgres psql -c "SELECT version();"
 
     也可在linux下的命令行中直接输入`psql -U my_user -d postgres`，如下：
 
-    ```linux
+    ```shell
     postgres=# \q
     postgres@ljt-virtual-machine:/etc/postgresql/16/main$ exit
     exit
@@ -181,7 +199,7 @@ sudo -u postgres psql -c "SELECT version();"
 
     1. 先尝试登录初始化的数据库`template1`：
 
-        ```linux
+        ```shell
         ljt@ljt-virtual-machine:~/Desktop$ psql -U my_user -d template1
         Password for user my_user: 
         psql (16.0 (Ubuntu 16.0-1.pgdg22.04+1))
@@ -194,7 +212,7 @@ sudo -u postgres psql -c "SELECT version();"
         可以看到，登录成功。
         也可以使用`-h`参数指定主机地址，如下：
 
-        ```linux
+        ```shell
         ljt@ljt-virtual-machine:~/Desktop$ psql -U my_user -h 127.0.0.1 -d template1
         Password for user my_user: 
         psql (16.0 (Ubuntu 16.0-1.pgdg22.04+1))
@@ -206,7 +224,7 @@ sudo -u postgres psql -c "SELECT version();"
 
     2. **但是要注意：初始化的数据库template0是不允许登录的：**
 
-        ```linux
+        ```shell
         ljt@ljt-virtual-machine:~/Desktop$ psql -U my_user -h 127.0.0.1 -d template0
         Password for user my_user: 
         psql: error: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database "template0" is not currently accepting connections
@@ -217,25 +235,6 @@ sudo -u postgres psql -c "SELECT version();"
 
 12. 手册（`man psql`）和 [文档](https://www.postgresql.org/docs/) 也非常有用
     ![Alt text](assets/PostgreSQL/image-19.png){width=500}
-
-## 二、 查询
-
-### 1. 图形化SQL查询入口
-
-如图所示：
-![PostgreSQL](assets/PostgreSQL/image.png){width=500}
-查询实例：
-![Alt text](assets/PostgreSQL/image-1.png){width=500}
-
-### 2. 命令行SQL查询入口
-
-如图所示：
-![Alt text](assets/PostgreSQL/image-2.png)
-查询实例：
-![Alt text](assets/PostgreSQL/image-3.png)
-
-linux下的命令行查询入口：
-![Alt text](assets/PostgreSQL/image-9.png)
 
 ## 三、 远程访问
 
@@ -252,7 +251,181 @@ linux下的命令行查询入口：
 - 主机ping虚拟机ip
 ![Alt text](assets/PostgreSQL/image-7.png)
 
-### 2. 认证方式与远程连接
+### 2. Linux下的配置
+
+#### 1. 查看配置文件路径
+
+在上面我们介绍了配置文件`pg_hba.conf`, 这个文件的具体位置，可以在登录数据库后，通过下面命令来查看：
+
+```shell
+postgres=# show hba_file;
+              hba_file               
+-------------------------------------
+ /etc/postgresql/16/main/pg_hba.conf
+(1 row)
+
+postgres=# 
+```
+
+后面还会用到配置文件`postgresql.conf`, 我们可以通过下面的方式来查看具体路径：
+
+```shell
+postgres=# show config_file;
+               config_file               
+-----------------------------------------
+ /etc/postgresql/16/main/postgresql.conf
+(1 row)
+
+postgres=# 
+```
+
+#### 2. 认证方式
+
+PostgreSQL 支持多种身份认证方式。最常用的方法如下：
+
+- Trust: 只要满足pg_hba.conf定义的条件，一个角色就可以不使用密码就能连接服务器
+- Password: 通过密码，一个角色可以连接服务器。密码可以被存储为 scram-sha-256, md5, 和 password(明文)。
+- Ident: 仅仅支持 TCP/IP 连接。它通常通过一个可选的用户名映射表，获取客户端操作系统用户名。
+- Peer: 和 Ident 一样，仅仅支持本地连接。
+PostgreSQL 客户端身份验证通常被定义在pg_hba.conf文件中。默认情况下，对于本地连接，PostgreSQL 被设置成身份认证防范 peer。
+
+#### 3. 修改配置文件
+
+##### 1.修改配置文件`pg_hba.conf`
+
+配置文件路径： `/etc/postgresql/16/main/pg_hba.conf`
+注意：这个路径中的“16”是PostgreSQL主版本号，请与实际情况保持一致
+
+可以看到默认的配置文件中有一条关于IPv4的规则
+
+```shell
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            scram-sha-256
+```
+
+如果想要允许192.168.31网段的所有主机通过md5的形式进行连接，请增加下面的这句：
+
+```shell
+# Allow 192.168.31.XXX hosts to connect via md5
+host    all             all             192.168.31.0/24          md5
+```
+
+如果想要允许所有的主机通过md5的形式进行连接，请增加下面的这句：
+
+```shell
+# Allow all hosts to connect via md5
+host    all             all             0.0.0.0/0               md5
+```
+
+##### 2.修改配置文件`postgresql.conf`
+
+配置文件路径： `/etc/postgresql/16/main/postgresql.conf`
+注意：这个路径中的“16”是PostgreSQL主版本号，请与实际情况保持一致
+
+在这个配置文件中，可以看到下面的内容：
+修改监听地址
+
+```shell
+# - Connection Settings -
+
+#listen_addresses = 'localhost'		# what IP address(es) to listen on;
+					# comma-separated list of addresses;
+					# defaults to 'localhost'; use '*' for all
+					# (change requires restart)
+port = 5432    # (change requires restart)
+max_connections = 100			# (change requires restart)
+```
+
+根据提示信息，我们在#listen_addresses = 'localhost'行后，在port行前增加一行:
+
+```shell
+listen_addresses = '*'
+port = 5432				# (change requires restart)
+max_connections = 100			# (change requires restart)
+```
+
+##### 3.修改防火墙，允许端口连接
+
+从上一小节可以看到访问数据库的默认端口是5432，请[修改防火墙允许访问](https://zhuanlan.zhihu.com/p/571124400#:~:text=1.%E6%89%A7%E8%A1%8C%20ufw%20allow%2022%20%E5%91%BD%E4%BB%A4%E5%BC%80%E6%94%BE%E6%8C%87%E5%AE%9A%E7%AB%AF%E5%8F%A3%EF%BC%8C%E8%BF%99%E9%87%8C%E4%BB%A5SSH%E4%B8%BA%E4%BE%8B%E3%80%82%20root%40zq-virtual-machine%3A%2Fhome%2Fzq%23%20ufw,allow%2022%20Rule%20added%20Rule%20added%20%28v6%29%202.%E4%B9%9F%E5%8F%AF%E4%BB%A5%E5%85%81%E8%AE%B8%E4%BB%8E%E7%89%B9%E5%AE%9A%E4%B8%BB%E6%9C%BA%E6%88%96%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E7%AB%AF%E5%8F%A3%EF%BC%8C%E7%B1%BB%E4%BC%BC%E4%BA%8E%E7%BD%91%E7%BB%9C%E4%B8%8A%E7%9A%84%E9%AB%98%E7%BA%A7ACL%E4%B8%AD%E7%9A%84rule%E3%80%82)（我自己没改）。
+
+```shell
+sudo firewall-cmd --add-port=5432/tcp --permanent
+sudo firewall-cmd --reload
+```
+
+修改完配置文件，修改完防火墙，**重启**PostGreSQL服务后，检查服务与端口是否启动成功：
+
+```shell
+ljt@ljt-virtual-machine:/etc/postgresql/16/main$ service postgresql status
+● postgresql.service - PostgreSQL RDBMS
+     Loaded: loaded (/lib/systemd/system/postgresql.service; enabled; vendor preset: ena>
+     Active: active (exited) since Wed 2023-10-11 01:12:11 CST; 13s ago
+    Process: 7005 ExecStart=/bin/true (code=exited, status=0/SUCCESS)
+   Main PID: 7005 (code=exited, status=0/SUCCESS)
+        CPU: 1ms
+10月 11 01:12:11 ljt-virtual-machine systemd[1]: Starting PostgreSQL RDBMS...
+10月 11 01:12:11 ljt-virtual-machine systemd[1]: Finished PostgreSQL RDBMS.
+
+ljt@ljt-virtual-machine:/etc/postgresql/16/main$ sudo lsof -i :5432
+COMMAND   PID     USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+postgres 6988 postgres    6u  IPv4  87515      0t0  TCP *:postgresql (LISTEN)
+postgres 6988 postgres    7u  IPv6  87516      0t0  TCP *:postgresql (LISTEN)
+ljt@ljt-virtual-machine:/etc/postgresql/16/main$ 
+```
+
+##### 4.尝试远程连接
+
+![Alt text](assets/PostgreSQL/image-21.png){width=350}
+
+连接成功！！！
+
+### 3. Windows下的配置
+
+#### 1.打开postgresql安装目录的data子目录
+
+找到`pg_hba.conf`文件
+
+![Alt text](assets/PostgreSQL/image-22.png){width=500}
+
+#### 2.修改配置文件
+
+在IPV4 local connections下面添加一行
+
+```shell
+host    all             all             0.0.0.0/0                 md5
+```
+
+![Alt text](assets/PostgreSQL/image-23.png)
+
+#### 3.重启服务
+
+(虽然亲测不重启也可以)
+
+![Alt text](assets/PostgreSQL/image-25.png)
+
+![Alt text](assets/PostgreSQL/image-26.png)
+
+#### 4.设置防火墙
+
+亲测不设置或者不关闭也没事
+
+![Alt text](assets/PostgreSQL/image-27.png){width=500}
+
+#### 5.尝试重新连接
+
+![Alt text](assets/PostgreSQL/image-24.png){width=350}
+
+**注意**：Linux的Navicat下载中文网站不要下载英文网站，会显示没有学生权益
+
+## 四、基本使用
+
+### 1.数据库的操作（和使用技巧类似）
+
+#### 1.登录
+
+```shell
+
+```
 
 
 

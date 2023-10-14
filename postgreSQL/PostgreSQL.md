@@ -167,7 +167,7 @@ sudo -u postgres psql -c "SELECT version();"
     直接指定用户名进行登录
 
     ![Alt text](assets/PostgreSQL/image-18.png)
-    
+
     会提示数据库不存在
     **注意**：我们必须指定一个数据库（默认情况下，它将尝试将你连接到与登录的用户名相同的数据库）。
     因此我们就用`-d`参数指定数据库，如下：
@@ -328,20 +328,20 @@ host    all             all             0.0.0.0/0               md5
 ```shell
 # - Connection Settings -
 
-#listen_addresses = 'localhost'		# what IP address(es) to listen on;
-					# comma-separated list of addresses;
-					# defaults to 'localhost'; use '*' for all
-					# (change requires restart)
+#listen_addresses = 'localhost'     # what IP address(es) to listen on;
+                    # comma-separated list of addresses;
+                    # defaults to 'localhost'; use '*' for all
+                    # (change requires restart)
 port = 5432    # (change requires restart)
-max_connections = 100			# (change requires restart)
+max_connections = 100           # (change requires restart)
 ```
 
 根据提示信息，我们在#listen_addresses = 'localhost'行后，在port行前增加一行:
 
 ```shell
 listen_addresses = '*'
-port = 5432				# (change requires restart)
-max_connections = 100			# (change requires restart)
+port = 5432             # (change requires restart)
+max_connections = 100   # (change requires restart)
 ```
 
 ##### 3.修改防火墙，允许端口连接
@@ -424,10 +424,52 @@ host    all             all             0.0.0.0/0                 md5
 #### 1.登录
 
 ```shell
-
+#psql -h 服务器 -U 用户名 -d 数据库 -p 端口地址 // -U是大写 
 ```
 
+#### 2.数据库操作
 
+```shell
+# 创建数据库
+CREATE DATABASE mydb;
+
+# 查看所有数据库
+\l
+
+# 切换数据库
+\c mydb
+
+# 删除数据库
+DROP DATABASE mydb;
+```
+
+### 2.数据库表操作
+
+#### 1.创建表
+
+创建表格时每列都必须使用数据类型。PostgreSQL中主要有三类数据类型：
+
+- 数值类型：整数、浮点数、定点数等
+- 字符串类型：字符、文本、二进制等
+- 日期/时间类型：日期、时间、时间戳等
+
+| Column 1 | Column 2 | Column 3 |
+| -------- | -------- | -------- |
+| Row 1, Column 1 | Row 1, Column 2 | Row 1, Column 3 |
+| Row 2, Column 1 | Row 2, Column 2 | Row 2, Column 3 |
+| Row 3, Column 1 | Row 3, Column 2 | Row 3, Column 3 |
+
+```shell
+
+
+```shell
+# 创建表
+CREATE TABLE mytable (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(20) NOT NULL,
+    age INT NOT NULL
+);
+```
 
 在 PostgreSQL 中，我们可以使用 SQL 语句来创建、修改和删除数据库。以下是一些常用的 SQL 命令：
 

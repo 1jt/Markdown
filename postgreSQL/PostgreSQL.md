@@ -453,22 +453,128 @@ DROP DATABASE mydb;
 - 字符串类型：字符、文本、二进制等
 - 日期/时间类型：日期、时间、时间戳等
 
-| Column 1 | Column 2 | Column 3 |
-| -------- | -------- | -------- |
-| Row 1, Column 1 | Row 1, Column 2 | Row 1, Column 3 |
-| Row 2, Column 1 | Row 2, Column 2 | Row 2, Column 3 |
-| Row 3, Column 1 | Row 3, Column 2 | Row 3, Column 3 |
+**数值：**
 
-```shell
+| 名字 | 存储长度 | 描述 | 范围 |
+| -------- | -------- | -------- | -------- |
+| smallint | 2字节 | 小范围整数 | -32768 ~ 32767 |
+| integer | 4字节 | 常用整数 | -2147483648 ~ 2147483647 |
+| bigint | 8字节 | 大范围整数 | -9223372036854775808 ~ 9223372036854775807 |
+| decimal | 可变 | 用户指定精度的定点数 | 小数点前131072位；小数点后16383位 |
+| numeric | 可变 | 用户指定精度的定点数 | 小数点前131072位；小数点后16383位 |
+| real | 4字节 | 可变精度的浮点数 | 6位十进制数字精度 |
+| double precision | 8字节 | 可变精度的浮点数 | 15位十进制数字精度 |
 
+**字符串：**
+
+- char(size),character(size)：固定长度的字符串，size是字符串的长度，如果字符串长度小于size，会在右边补空格，如果大于size，会报错。
+- varchar(size),character varying(size)：可变长度的字符串，size是字符串的最大长度。
+- text：可变长度的字符串，和varchar一样，但是没有长度限制。
+  
+**日期/时间：**
+
+表示日期或时间的数据类型有：
+
+- timestamp：时间戳，包含日期和时间，格式为YYYY-MM-DD HH:MM:SS。
+- date：日期，格式为YYYY-MM-DD。
+- time：时间，格式为HH:MM:SS。
+  
+**其他：**
+
+- boolean：布尔值，true或false。
+- money：货币金额。
+- inet：IPV4或IPV6地址。
+- 几何数据等
 
 ```shell
 # 创建表
-CREATE TABLE mytable (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(20) NOT NULL,
-    age INT NOT NULL
-);
+CREATE TABLE test(id int, name varchar(20));
+
+# 在表中插入数据
+INSERT INTO test(id,body) VALUES(1, 'test1');
+
+# 查看所有表
+\d
+
+# 查看表结构
+\d test
+
+# 删除表
+DROP TABLE test;
+```
+
+PostgreSQL使用序列来标识字段的自增长，数据类型有serial、smallserial、bigserial，分别对应int、smallint、bigint。这些类型都是自增长的，但是不能手动插入值，如果手动插入值，会报错。这些属性类似于MySQL中的auto_increment。
+
+示例：
+
+```shell
+postgres=# \c mydb 
+You are now connected to database "mydb" as user "postgres".
+mydb=# create table test(id serial primary key,name varchar(255));// 有了serial没必要int了，primary key表示主键
+CREATE TABLE
+
+mydb=# insert into test(name) values('ljt');// into 不能省略
+INSERT 0 1
+mydb=# select * from test;
+ id | name 
+----+------
+  1 | ljt
+(1 row)
+
+mydb=# \d
+             List of relations
+ Schema |    Name     |   Type   |  Owner   
+--------+-------------+----------+----------
+ public | test        | table    | postgres
+ public | test_id_seq | sequence | postgres
+(2 rows)
+
+mydb=# \d test
+                                   Table "public.test"
+ Column |          Type          | Collation | Nullable |             Default              
+--------+------------------------+-----------+----------+----------------------------------
+ id     | integer                |           | not null | nextval('test_id_seq'::regclass)
+ name   | character varying(255) |           |          | 
+Indexes:
+    "test_pkey" PRIMARY KEY, btree (id)
+
+```
+
+当然也支持MySQL的语法，例如：
+
+```shell
+mydb=# update test set name = 'bbx' where id = 1;
+UPDATE 1
+mydb=# select * from test;
+ id | name 
+----+------
+  1 | bbx
+(1 row)
+```
+
+### 3.Schema
+
+Schema是PostgreSQL中的一个重要概念，它类似于MySQL中的database，但是又有所不同。Schema是一个命名空间，它包含了一组表、视图、函数、索引、数据类型等。Schema可以用来对数据库中的对象进行分组和授权，它可以被认为是数据库中的一个目录。
+
+相同的对象名可以在不同的Schema中存在，例如，可以在public Schema中创建一个test表，在test Schema中也可以创建一个test表，这两个表是不同的，它们的完整名称分别是public.test和test.test。
+
+使用模式的优势：
+
+- 允许多个用户使用同一个数据库并且不会互相干扰
+- 将数据库对象组织成逻辑组以便于管理
+- 第三方应用程序可以使用模式来隔离它们的对象，以免与其他应用程序的对象冲突
+
+模式类似于操作系统的目录，但是模式不能嵌套，一个模式不能包含另一个模式。
+
+```shell
+# 创建模式
+CREATE SCHEMA myschema;
+
+# 删除模式
+DROP SCHEMA myschema;
+
+# 删除模式及其包含的对象
+DROP SCHEMA myschema CASCADE;
 ```
 
 在 PostgreSQL 中，我们可以使用 SQL 语句来创建、修改和删除数据库。以下是一些常用的 SQL 命令：

@@ -167,7 +167,7 @@ sudo -u postgres psql -c "SELECT version();"
     直接指定用户名进行登录
 
     ![Alt text](assets/PostgreSQL/image-18.png)
-    
+
     会提示数据库不存在
     **注意**：我们必须指定一个数据库（默认情况下，它将尝试将你连接到与登录的用户名相同的数据库）。
     因此我们就用`-d`参数指定数据库，如下：
@@ -328,20 +328,20 @@ host    all             all             0.0.0.0/0               md5
 ```shell
 # - Connection Settings -
 
-#listen_addresses = 'localhost'		# what IP address(es) to listen on;
-					# comma-separated list of addresses;
-					# defaults to 'localhost'; use '*' for all
-					# (change requires restart)
+#listen_addresses = 'localhost'     # what IP address(es) to listen on;
+                    # comma-separated list of addresses;
+                    # defaults to 'localhost'; use '*' for all
+                    # (change requires restart)
 port = 5432    # (change requires restart)
-max_connections = 100			# (change requires restart)
+max_connections = 100           # (change requires restart)
 ```
 
 根据提示信息，我们在#listen_addresses = 'localhost'行后，在port行前增加一行:
 
 ```shell
 listen_addresses = '*'
-port = 5432				# (change requires restart)
-max_connections = 100			# (change requires restart)
+port = 5432             # (change requires restart)
+max_connections = 100   # (change requires restart)
 ```
 
 ##### 3.修改防火墙，允许端口连接
@@ -424,10 +424,158 @@ host    all             all             0.0.0.0/0                 md5
 #### 1.登录
 
 ```shell
+#psql -h 服务器 -U 用户名 -d 数据库 -p 端口地址 // -U是大写 
+```
+
+#### 2.数据库操作
+
+```shell
+# 创建数据库
+CREATE DATABASE mydb;
+
+# 查看所有数据库
+\l
+
+# 切换数据库
+\c mydb
+
+# 删除数据库
+DROP DATABASE mydb;
+```
+
+### 2.数据库表操作
+
+#### 1.创建表
+
+创建表格时每列都必须使用数据类型。PostgreSQL中主要有三类数据类型：
+
+- 数值类型：整数、浮点数、定点数等
+- 字符串类型：字符、文本、二进制等
+- 日期/时间类型：日期、时间、时间戳等
+
+**数值：**
+
+| 名字 | 存储长度 | 描述 | 范围 |
+| -------- | -------- | -------- | -------- |
+| smallint | 2字节 | 小范围整数 | -32768 ~ 32767 |
+| integer | 4字节 | 常用整数 | -2147483648 ~ 2147483647 |
+| bigint | 8字节 | 大范围整数 | -9223372036854775808 ~ 9223372036854775807 |
+| decimal | 可变 | 用户指定精度的定点数 | 小数点前131072位；小数点后16383位 |
+| numeric | 可变 | 用户指定精度的定点数 | 小数点前131072位；小数点后16383位 |
+| real | 4字节 | 可变精度的浮点数 | 6位十进制数字精度 |
+| double precision | 8字节 | 可变精度的浮点数 | 15位十进制数字精度 |
+
+**字符串：**
+
+- char(size),character(size)：固定长度的字符串，size是字符串的长度，如果字符串长度小于size，会在右边补空格，如果大于size，会报错。
+- varchar(size),character varying(size)：可变长度的字符串，size是字符串的最大长度。
+- text：可变长度的字符串，和varchar一样，但是没有长度限制。
+  
+**日期/时间：**
+
+表示日期或时间的数据类型有：
+
+- timestamp：时间戳，包含日期和时间，格式为YYYY-MM-DD HH:MM:SS。
+- date：日期，格式为YYYY-MM-DD。
+- time：时间，格式为HH:MM:SS。
+  
+**其他：**
+
+- boolean：布尔值，true或false。
+- money：货币金额。
+- inet：IPV4或IPV6地址。
+- 几何数据等
+
+```shell
+# 创建表
+CREATE TABLE test(id int, name varchar(20));
+
+# 在表中插入数据
+INSERT INTO test(id,body) VALUES(1, 'test1');
+
+# 查看所有表
+\d
+
+# 查看表结构
+\d test
+
+# 删除表
+DROP TABLE test;
+```
+
+PostgreSQL使用序列来标识字段的自增长，数据类型有serial、smallserial、bigserial，分别对应int、smallint、bigint。这些类型都是自增长的，但是不能手动插入值，如果手动插入值，会报错。这些属性类似于MySQL中的auto_increment。
+
+示例：
+
+```shell
+postgres=# \c mydb 
+You are now connected to database "mydb" as user "postgres".
+mydb=# create table test(id serial primary key,name varchar(255));// 有了serial没必要int了，primary key表示主键
+CREATE TABLE
+
+mydb=# insert into test(name) values('ljt');// into 不能省略
+INSERT 0 1
+mydb=# select * from test;
+ id | name 
+----+------
+  1 | ljt
+(1 row)
+
+mydb=# \d
+             List of relations
+ Schema |    Name     |   Type   |  Owner   
+--------+-------------+----------+----------
+ public | test        | table    | postgres
+ public | test_id_seq | sequence | postgres
+(2 rows)
+
+mydb=# \d test
+                                   Table "public.test"
+ Column |          Type          | Collation | Nullable |             Default              
+--------+------------------------+-----------+----------+----------------------------------
+ id     | integer                |           | not null | nextval('test_id_seq'::regclass)
+ name   | character varying(255) |           |          | 
+Indexes:
+    "test_pkey" PRIMARY KEY, btree (id)
 
 ```
 
+当然也支持MySQL的语法，例如：
 
+```shell
+mydb=# update test set name = 'bbx' where id = 1;
+UPDATE 1
+mydb=# select * from test;
+ id | name 
+----+------
+  1 | bbx
+(1 row)
+```
+
+### 3.Schema
+
+Schema是PostgreSQL中的一个重要概念，它类似于MySQL中的database，但是又有所不同。Schema是一个命名空间，它包含了一组表、视图、函数、索引、数据类型等。Schema可以用来对数据库中的对象进行分组和授权，它可以被认为是数据库中的一个目录。
+
+相同的对象名可以在不同的Schema中存在，例如，可以在public Schema中创建一个test表，在test Schema中也可以创建一个test表，这两个表是不同的，它们的完整名称分别是public.test和test.test。
+
+使用模式的优势：
+
+- 允许多个用户使用同一个数据库并且不会互相干扰
+- 将数据库对象组织成逻辑组以便于管理
+- 第三方应用程序可以使用模式来隔离它们的对象，以免与其他应用程序的对象冲突
+
+模式类似于操作系统的目录，但是模式不能嵌套，一个模式不能包含另一个模式。
+
+```shell
+# 创建模式
+CREATE SCHEMA myschema;
+
+# 删除模式
+DROP SCHEMA myschema;
+
+# 删除模式及其包含的对象
+DROP SCHEMA myschema CASCADE;
+```
 
 在 PostgreSQL 中，我们可以使用 SQL 语句来创建、修改和删除数据库。以下是一些常用的 SQL 命令：
 

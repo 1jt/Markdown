@@ -577,11 +577,89 @@ DROP SCHEMA myschema;
 DROP SCHEMA myschema CASCADE;
 ```
 
-在 PostgreSQL 中，我们可以使用 SQL 语句来创建、修改和删除数据库。以下是一些常用的 SQL 命令：
+例如：
 
-- `CREATE DATABASE dbname;`：创建一个名为 `dbname` 的数据库。
-- `DROP DATABASE dbname;`：删除一个名为 `dbname` 的数据库。
-- `ALTER DATABASE dbname RENAME TO new_dbname;`：将一个名为 `dbname` 的数据库重命名为 `new_dbname`。
+```shell
+mydb=# CREATE SCHEMA myschema;
+CREATE SCHEMA
+mydb=# create table myschema.test(id int,name varchar(255));
+CREATE TABLE
+```
+
+### 4.[备份数据库](https://zhuanlan.zhihu.com/p/269874791)
+
+**单数据库：**
+
+PostgreSQL提供了[pg_dump](https://www.cnblogs.com/BillyYoung/p/11057854.html)工具来备份单个数据库，pg_dump可以将数据库备份到一个文件中，这个文件可以用来恢复数据库。必须以对要备份的数据库有读权限的用户身份运行pg_dump。
+
+要演示恢复丢失的数据库，请删除示例数据库并在**其位置创建一个空数据库**
+
+```shell
+# 备份数据库
+pg_dump dbname > dbname.bak -f 指定路径 -U 用户名 -t 指定表
+
+# 恢复数据库
+psql dbname < dbname.bak -U 用户名
+```
+
+生成的备份文件可以使用`scp`传输到另一台主机，也可以存储在本地以供以后使用。
+
+```shell
+# 示例
+ljt@ljt-virtual-machine:~/Desktop$ pg_dump mydb > mydb.bak -U postgres
+Password: 
+
+postgres@ljt-virtual-machine:/home/ljt/Desktop$ psql mydb < mydb.bak 
+Password for user postgres: 
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+SET
+SET
+SET
+SET
+CREATE SCHEMA
+ALTER SCHEMA
+SET
+SET
+CREATE TABLE
+ALTER TABLE
+CREATE TABLE
+ALTER TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+ALTER SEQUENCE
+ALTER TABLE
+COPY 0
+COPY 1
+ setval 
+--------
+      1
+(1 row)
+
+ALTER TABLE
+```
+
+备份格式有几种选择：
+
+- `*.bak`: 压缩二进制格式，可以用来恢复数据库，但是不能直接查看。
+- `*.sql`: 文本格式，可以用来恢复数据库，也可以直接查看。
+- `*.tar`: tarball，压缩二进制格式，可以用来恢复数据库，也可以直接查看。
+
+> 注意：在默认情况下，PostgreSQL将忽略备份过程中发生的任何错误。这可能导致备份文件中的数据不完整。要确保备份过程中发生错误时停止备份，可以使用`-l`选项运行pg_dump。这将导致整个备份过程视为单个事务，pg_dump在遇到错误时退出，并且不会生成任何输出文件。
+
+**所有数据库：**
+
+由于pg_dump只能备份单个数据库，因此如果要备份所有数据库，可以使用pg_dumpall工具。pg_dumpall可以备份所有数据库，包括模板数据库，它还可以备份集群的全局对象，例如用户和组。
+
+
 
 ## 表
 

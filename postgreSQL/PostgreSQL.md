@@ -86,17 +86,19 @@ sudo -u postgres psql -c "SELECT version();"
 
     ```text
     \l
-     ```
+    ```
 
     按 `q` 键退出
     ![Alt text](assets/PostgreSQL/image-12.png)
+
 5. 使用 \du 命令，可以查看 PostgreSQL 用户：
 
     ```text
-   \du
+    \du
     ```
 
     ![Alt text](assets/PostgreSQL/image-13.png)
+
 6. 你可以使用以下命令更改任何用户（包括 `postgres`）的密码：
 
     ```text

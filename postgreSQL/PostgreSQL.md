@@ -724,7 +724,120 @@ ALTER TABLE
 
 由于pg_dump只能备份单个数据库，因此如果要备份所有数据库，可以使用pg_dumpall工具。pg_dumpall可以备份所有数据库，包括模板数据库，它还可以备份集群的全局对象，例如用户和组。
 
-创建备份文件
+```shell
+# 创建备份文件
+pg_dumpall > pgbackup.bak
+
+# 恢复备份文件
+psql -f pgbackup.bak postgres
+```
+
+```shell
+# 不知道为啥输好几次密码
+ljt@ljt-virtual-machine:~/Desktop$ pg_dumpall > pgbackup.bak -U postgres
+Password: 
+Password: 
+Password: 
+Password: 
+```
+
+### 5.用户操作
+
+```shell
+# 创建用户并设置密码
+CREATE USER myuser WITH PASSWORD 'mypassword';
+
+# 修改用户密码
+ALTER USER myuser WITH PASSWORD 'mypassword';
+
+# 数据库授权，赋予指定用户对指定数据库的权限
+GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
+
+# 但是此时用户还是没有读写权限，需要继续表授权，赋予指定用户对指定表的权限，必须是在所要操作的数据库里执行！！！
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO xxx;
+GRANT ALL PRIVILEGES ON TABLE mytable TO myuser;
+
+# 撤销数据库授权
+REVOKE ALL PRIVILEGES ON DATABASE mydb FROM myuser;
+
+# 撤销表授权
+REVOKE ALL PRIVILEGES ON TABLE mytable FROM myuser;
+
+# 超级用户权限
+ALTER USER myuser WITH SUPERUSER;
+
+# 删除用户
+DROP USER myuser;
+```
+
+### 6.角色管理
+
+在PostgreSQL中里没有严格区分用户和角色的概念，"CREATE USER"为"CREATE ROLE"的别名，唯一的区别是"CREATE USER"创建的角色具有LOGIN属性，而"CREATE ROLE"创建的角色没有LOGIN属性。
+
+```shell
+postgres=# CREATE ROLE David; // 默认不带LOGIN属性
+CREATE ROLE
+postgres=# CREATE USER Sandy; // 默认具有LOGIN属性
+CREATE ROLE
+postgres=# \du
+                             List of roles
+ Role name |                         Attributes                         
+-----------+------------------------------------------------------------
+ david     | Cannot login
+ my_user   | Superuser
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS
+ sandy     | 
+
+postgres=# select * from pg_roles;
+           rolname           | rolsuper | rolinherit | rolcreaterole | rolcreatedb | rolcanlogin | rolreplication | rolconnlimit | rolpassword | rolvaliduntil | rolbypassrls | rolconfig |  oid  
+-----------------------------+----------+------------+---------------+-------------+-------------+----------------+--------------+-------------+---------------+--------------+-----------+-------
+ pg_database_owner           | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  6171
+ pg_read_all_data            | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  6181
+ pg_write_all_data           | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  6182
+ pg_monitor                  | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  3373
+ pg_read_all_settings        | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  3374
+ pg_read_all_stats           | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  3375
+ pg_stat_scan_tables         | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  3377
+ pg_read_server_files        | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  4569
+ pg_write_server_files       | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  4570
+ pg_execute_server_program   | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  4571
+ pg_signal_backend           | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  4200
+ pg_checkpoint               | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  4544
+ pg_use_reserved_connections | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  4550
+ pg_create_subscription      | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           |  6304
+ postgres                    | t        | t          | t             | t           | t           | t              |           -1 | ********    |               | t            |           |    10
+ my_user                     | t        | t          | f             | f           | t           | f              |           -1 | ********    |               | f            |           | 24577
+ david                       | f        | t          | f             | f           | f           | f              |           -1 | ********    |               | f            |           | 40982
+ sandy                       | f        | t          | f             | f           | t           | f              |           -1 | ********    |               | f            |           | 40983
+(18 rows)
+
+
+
+postgres=# select * from pg_user;
+ usename  | usesysid | usecreatedb | usesuper | userepl | usebypassrls |  passwd  | valuntil | useconfig 
+----------+----------+-------------+----------+---------+--------------+----------+----------+-----------
+ postgres |       10 | t           | t        | t       | t            | ******** |          | 
+ my_user  |    24577 | f           | t        | f       | f            | ******** |          | 
+ sandy    |    40983 | f           | f        | f       | f            | ******** |          | 
+(3 rows)
+```
+
+**角色属性:**
+
+| 属性 | 说明 |
+|----------|----------|
+| login   | 只有具有LOGIN属性的角色可以用作数据库连接的初始角色名|
+| superuser | 可以执行任何操作，而不受任何限制|
+| createdb | 创建数据库权限|
+| createrole | 允许创建或删除其他普通的用户角色（超级用户除外）|
+| inherit | 用户组对组员的一个继承标志，成员可以继承用户组的权限特性|
+| replication | 做流复制的时候用到的一个用户属性，一般单独设定|
+| password | 在登录时要求指定密码时才会起作用，比如md5或者password模式，跟用户端的连接认证方式有关|
+
+```shell
+# 赋予用户登录权限
+ALTER ROLE myuser WITH LOGIN;
+```
 
 ## 表
 

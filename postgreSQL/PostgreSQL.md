@@ -4,6 +4,28 @@
 
 PostgreSQL是一种开源的关系型数据库管理系统，它具有高度的可扩展性、稳定性和安全性。它支持大部分的SQL标准，并且被设计成可以被用户在许多方面进行扩展。它支持ACID事务、外键、视图、序列、子查询、触发器、用户定义类型和函数、外连接、多版本并发控制等特性。此外，PostgreSQL还提供了许多图形用户界面和多种编程语言的绑定。它是一个功能齐全的面向对象的关系型数据库管理系统，适用于各种规模的应用程序。
 
+**安装：**
+
+上[官网](https://www.postgresql.org/download/linux/ubuntu/)挨着运行
+
+```shell
+# Create the file repository configuration:
+sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+
+# Import the repository signing key:
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+# Update the package lists:
+sudo apt-get update
+
+# Install the latest version of PostgreSQL.
+# If you want a specific version, use 'postgresql-12' or similar instead of 'postgresql':
+sudo apt-get -y install postgresql
+
+# 有兴趣也可以装个这个，包含一些不属于 PostgreSQL 核心包的实用工具和功能
+sudo apt install postgresql-contrib
+```
+
 **Linux安装成功：**
 
 ```shell
@@ -69,22 +91,35 @@ sudo -u postgres psql -c "SELECT version();"
 
 1. 通过执行以下命令来检查 PostgreSQL 是否正在运行：
 
-    ```text
+    ```shell
     service postgresql status
     ```
 
-    ![Alt text](assets/PostgreSQL/image-11.png)
+    ```shell
+    ljt@ubuntu:~/Desktop$ service postgresql status
+    ● postgresql.service - PostgreSQL RDBMS
+        Loaded: loaded (/lib/systemd/system/postgresql.service; enabled; vendor pr>
+        Active: active (exited) since Mon 2023-10-16 04:47:59 PDT; 14h ago
+    Main PID: 5963 (code=exited, status=0/SUCCESS)
+        Tasks: 0 (limit: 4556)
+        Memory: 0B
+        CGroup: /system.slice/postgresql.service
+
+    Oct 16 04:47:59 ubuntu systemd[1]: Starting PostgreSQL RDBMS...
+    Oct 16 04:47:59 ubuntu systemd[1]: Finished PostgreSQL RDBMS.
+    ```
+
     可以看到服务处于`active`状态，也就是可以登陆。另外，也可以看到主服务进程的PID。
 2. 默认情况下，PostgreSQL 会创建一个拥有所权限的特殊用户`postgres`。要实际使用 PostgreSQL，你必须先登录该账户：
 
-   ```text
+   ```shell
    sudo su postgres
     ```
 
 3. 使用 `psql` 来启动 PostgreSQL Shell：
 4. 查看现有的所有表
 
-    ```text
+    ```shell
     \l
     ```
 
@@ -93,15 +128,23 @@ sudo -u postgres psql -c "SELECT version();"
 
 5. 使用 \du 命令，可以查看 PostgreSQL 用户：
 
-    ```text
+    ```shell
     \du
     ```
 
-    ![Alt text](assets/PostgreSQL/image-13.png)
+    ``` shell
+    postgres=# \du
+                                List of roles
+    Role name |                         Attributes                         
+    -----------+------------------------------------------------------------
+    postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS
+
+    postgres=# 
+    ```
 
 6. 你可以使用以下命令更改任何用户（包括 `postgres`）的密码：
 
-    ```text
+    ```shell
     ALTER USER postgres WITH PASSWORD 'my_password';
     ```
 
@@ -110,29 +153,50 @@ sudo -u postgres psql -c "SELECT version();"
     **注意**：将 `postgres` 替换为你要更改的用户名，`my_password` 替换为所需要的密码。另外，不要忘记每条命令后面的 ;（分号）。
 7. 建议另外创建一个用户（不建议使用默认的 postgres 用户）。为此，请使用以下命令：
 
-    ```text
+    ```shell
     CREATE USER my_user WITH PASSWORD 'my_password';
     ```
 
-    ![Alt text](assets/PostgreSQL/image-15.png)
+    ```shell
+    postgres=# CREATE USER my_user WITH PASSWORD '123456';
+    CREATE ROLE
+
+    postgres=# \du
+                                List of roles
+    Role name |                         Attributes                         
+    -----------+------------------------------------------------------------
+    my_user   | 
+    postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS
+    ```
+
     **注意**：将 `my_user` 替换为所需的用户名，`my_password` 替换为所需的密码。另外，不要忘记每条命令后面的 ;（分号）。
     可以使用以下命令删除用户：
 
-    ```text
+    ```shell
     DROP USER my_user;
     ```
 
 8. 但是，`my_user` 用户没有任何的属性。来让我们给它添加超级用户权限：
 
-    ```text
+    ```shell
     ALTER USER my_user WITH SUPERUSER;
     ```
 
-     ![Alt text](assets/PostgreSQL/image-16.png)
+    ```shell
+    postgres=# ALTER USER my_user WITH SUPERUSER;
+    ALTER ROLE
+    postgres=# \du
+                                List of roles
+    Role name |                         Attributes                         
+    -----------+------------------------------------------------------------
+    my_user   | Superuser
+    postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS
+    ```
+
     **注意**：将 `my_user` 替换为所需的用户名。另外，不要忘记每条命令后面的 ;（分号）。
 9. 要使用其他用户登录，使用 `\q` 命令退出，然后使用以下命令登录：
 
-    ```text
+    ```shell
     psql -U my_user
     ```
 
@@ -153,7 +217,7 @@ sudo -u postgres psql -c "SELECT version();"
     **解决方法**：更改配置文件,修改认证方式为md5，即密码认证方式。
 
     ```text
-    sudo vim /etc/postgresql/16/main/pg_hba.conf
+    sudo gedit /etc/postgresql/16/main/pg_hba.conf
     ```
 
     对于第一条local配置信息，为了意外操作导致默认用户不能登录，所以不建议更换。建议第二个local的认证为md5,替换后的内容如下：
@@ -167,7 +231,6 @@ sudo -u postgres psql -c "SELECT version();"
 10. 重新尝试登录
 
     直接指定用户名进行登录
-
     ![Alt text](assets/PostgreSQL/image-18.png)
 
     会提示数据库不存在
@@ -246,7 +309,7 @@ sudo -u postgres psql -c "SELECT version();"
 
 - 主机ip
 ![Alt text](assets/PostgreSQL/image-4.png){height=500}
-- 虚拟机ping主机ip（-c 限定数量，不然会ping不停）
+- 虚拟机ping主机ip（`-c` 限定数量，不然会ping不停）
 ![Alt text](assets/PostgreSQL/image-5.png){width=500}
 - 虚拟机ping
 ![Alt text](assets/PostgreSQL/image-6.png){width=500}

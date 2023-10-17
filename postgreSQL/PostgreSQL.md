@@ -839,6 +839,33 @@ postgres=# select * from pg_user;
 ALTER ROLE myuser WITH LOGIN;
 ```
 
+### 7.常用命令总结
+
+```shell
+# 查看SQL命令的解释，例如\h select。
+\h
+# 查看所有内部命令
+\?
+# 查看所有数据库
+\l
+# 切换数据库
+\c mydb
+# 列出当前数据库的所有表格
+\d
+# 查看某一张表格的表结构
+\d [table_name]
+# 查看所有用户
+\du
+# 查看所有角色
+\du+
+# 查看所有模式
+\dn
+# 设置密码
+\password
+# 退出
+\q
+```
+
 ## 表
 
 在 PostgreSQL 中，我们可以使用 SQL 语句来创建、修改和删除表。以下是一些常用的 SQL 命令：

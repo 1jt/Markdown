@@ -66,7 +66,7 @@ N: There is 1 additional record. Please use the '-a' switch to see it
 使用 `psql` 工具通过连接 PostgreSQL 数据库并且打印它的版本来验证安装：
 
 ```text
-sudo -u postgres psql -c "SELECT version();"
+sudo -u postgres psql -c "SELECT version();
 ```
 
 ## 二、使用技巧
@@ -892,3 +892,47 @@ ALTER ROLE myuser WITH LOGIN;
 ## 总结
 
 在本文中，我们介绍了 PostgreSQL 的基础知识和一些高级概念，包括安装、数据库、表、查询和索引。希望这些内容能够帮助你更好地理解和使用 PostgreSQL。
+
+
+CREATE FUNCTION c_overpaid(record, integer) RETURNS boolean  AS '/usr/lib/postgresql/16/lib/c_overpaid', 'c_overpaid' LANGUAGE C STRICT;
+
+
+```
+
+
+
+
+
+
+
+
+dellruiyun@dellruiyun:~/ljt/Xor$ vim Xor_DB.cpp 
+"
+
+dellruiyun@dellruiyun:~/ljt/Xor$ vim Xor_DB.cpp 
+dellruiyun@dellruiyun:~/ljt/Xor$ make test 
+g++  Xor_DB.cpp -lssl -lcrypto -lpq -o test
+dellruiyun@dellruiyun:~/ljt/Xor$ ./test 
+连接到数据库失败: FATAL:  password authentication failed for user "postgres"
+FATAL:  password authentication failed for user "postgres"
+
+dellruiyun@dellruiyun:~/ljt/Xor$ sudo su postgres
+postgres@dellruiyun:/home/dellruiyun/ljt/Xor$ psql
+psql (12.16 (Ubuntu 12.16-0ubuntu0.20.04.1))
+Type "help" for help.
+
+
+dellruiyun@dellruiyun:~/ljt/Xor$ vim Xor_DB.cpp 
+dellruiyun@dellruiyun:~/ljt/Xor$ make test 
+g++  Xor_DB.cpp -lssl -lcrypto -lpq -o test
+dellruiyun@dellruiyun:~/ljt/Xor$ ./test 
+*********************word_300w_10.txt*********************************
+ rate of progress: 3000%total_bytes: 0
+dellruiyun@dellruiyun:~/ljt/Xor$ 
+
+sudo sysdig -c topprocs_cpu
+
+sudo kill -9 (id)
+
+```
+

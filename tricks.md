@@ -11,4 +11,6 @@
    1. [总流程](https://lib.xidian.edu.cn/engine2/general/more?appId=17004&wfwfid=2403&pageId=14305&typeId=2190570)
    2. [点击打开附件](assets/tricks/查收查引委托单-网信院-王剑锋.doc)
    3. 需要EV Accession number，[点击查看](https://www.engineeringvillage.com/search/quick.url)
+   4. 等收到邮件以后填[报销单](assets/tricks/检索报销单.xlsx)(自费就算了)
+   5. 最后拿去一交直接打印
 9.  

@@ -50,4 +50,34 @@
 - 嵌入式或移动计算机（embedded or mobile computer）
 - 笔记本电脑或台式电脑（laptop- or desktop-class computer.）
 
+很显然我们可以通过比较处理器的时钟速度（clock speed）来评估处理器的速度，但是根据上一章的内容，我们会发现这样做会有很大的误导性：如果两个都是2GHz的处理器，但其中一个开启了并行计算，那么处理速度显然会加快。所以很难找到一个**直接的定量测量方法**。
+
+对于某些特定设备（比如general purpose graphics cards，类似于GPU），经常用每秒浮点运算次数（FLOPS，floating point operations per second）来衡量其计算能力。但是这种方法也存在不合理性，所以现在的测量方法是比较解决某些特定问题的时间，设置多条基线（参考网站（[CompuBench](https://compubench.com/result.jsp)）），而不是简单依靠某个定量指标。
+> 就跟人一样，各有所长，得多方面比较，不能只用一个分数就把所有人分为三教九流
+
+至于衡量设备的存储能力则相对简单很多了，只需要简单比较设备能够在永久存储中保存信息的大致字节数即可。
+> 人话：直接比大小
+
+**智能卡（smart card）：**
+
+- 计算能力最弱，不同实现的时钟速度也不同，大致在20MHz左右
+- 存储能力在2KiB左右
+
+**微控制器（micro-controller）：**
+
+- 单个集成电路上的小型计算机，包含一个处理器核心、存储器和可编程输入/输出外围设备
+- 计算能力和存储能力随着定义变化很大
+- 最典型传感器节点计算能力与智能卡相似，但是存储空间大点，a few KiB ~ a few MiB
+  
+**嵌入式或移动计算机（embedded or mobile computer）：**
+
+- 计算能力和存储能力更大，且范围也更大，可以看看自己手机的配置
+- 电量也随着时间的推移而增加
+
+**笔记本电脑或台式电脑（laptop- or desktop-class computer）：**
+
+- 计算能力和存储能力基本上比手机强（起码同时代上比）
+- 具体比较则需要考虑更多的因素，比如如果某个CPU有图形处理单元（graphics processing unit，GPU，理解为集显），那它处理图像的能力就比没有的强
+
+## [Number 4: The Complexity Class P](https://bristolcrypto.blogspot.com/2014/10/52-things-number-4-complexity-class-p.html)
 

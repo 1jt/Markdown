@@ -81,3 +81,9 @@
 
 ## [Number 4: The Complexity Class P](https://bristolcrypto.blogspot.com/2014/10/52-things-number-4-complexity-class-p.html)
 
+> On the topic of Theoretical Computer Science
+> 参考[*Introduction to the Theory of Computation* by Michael Sipser](http://www.amazon.co.uk/Introduction-Theory-Computation-Michael-Sipser/dp/0619217642)
+
+### 1. Complexity and Big O Notation
+
+### 2. Turing Machines

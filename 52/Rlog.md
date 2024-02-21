@@ -159,8 +159,12 @@
 > $P \overset{?}{=} NP$，是一个[千年问题](https://www.claymath.org/)，也称为百万悬赏问题
 
 我们确实发现了一些已知存在于 NP 中但不知道是否存在于 P 中的问题，也许未来的研究会表明这些问题也存在于 P 中。
+
 [B站相关解说](https://b23.tv/bnB8rdS)
+> 里面很有趣的一句话：如果能快速地检验答案，是否代表也有快速方法破解问题呢？
 
 许多有趣的密码系统（特别是在公钥密码中）都是基于计算问题“困难”的假设而安全的，这通常意味着“至少与 NP 中的任何问题一样困难”。
 
 有个很有趣的定理叫做[Cook-Levin theorem](https://en.wikipedia.org/wiki/Cook%E2%80%93Levin_theorem)，它表明 SAT 是 NP 完全问题(**NP-complete**)的第一个例子，也就是说，任何 NP 问题都可以在多项式时间内归约到 SAT。这意味着，如果我们可以在多项式时间内解决 SAT，那么我们就可以在多项式时间内解决 NP 中的任何问题。
+
+## [Number 6: How can we interpret NP as the set of theorems whose proofs can be checked in polynomial time?](https://bristolcrypto.blogspot.com/2014/11/52-things-number-6-how-can-we-interpret.html)

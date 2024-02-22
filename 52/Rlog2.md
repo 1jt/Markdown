@@ -51,7 +51,7 @@
 ## [Number 5: What is meant by the complexity class NP?](https://bristolcrypto.blogspot.com/2014/11/52-things-number-5-what-is-meant-by.html)
 
 - **P** is the class of languages decidable in polynomial time by a deterministic Turing machine.
-- **NP** is the class of languages decidable in polynomial time by a **nondeterministic** Turing machine.
+- **<font color=red>NP</font>** <font color=red>is the class of languages decidable in polynomial time by a </font>**<font color=red>nondeterministic</font>** <font color=red>Turing machine.</font>
 
 ### 1. What is a Nondeterministic Turing Machine (NDTM)?
 
@@ -102,5 +102,28 @@ $\mathrm{NP}$ is the class of languages that have **polynomial time verifiers**.
 因此，P vs NP 问题在密码学中可以理解为：**是否存在一个简单的方法可以破解密码？**。一旦这个问题被解决，密码学简单讲就是会崩溃~
 > 补充：整数分解问题并没有证据证明其是不是 NP-complete 问题，也没有证明它是不是 P 问题。
 
-
 ## [Number 7: How does randomness help in computation, and what is the class BPP?](https://bristolcrypto.blogspot.com/2014/11/52-things-number-7-how-does-randomness.html)
+
+- **P** is the class of languages decidable in polynomial time by a deterministic Turing machine.
+- **NP** is the class of languages decidable in polynomial time by a **nondeterministic** Turing machine.
+- **<font color=red>BPP</font>** <font color=red>is the class of languages that are recognised by a </font>**<font color=red>probabilistic polynomial time Turing machine</font>** <font color=red>with an error probability of $\frac{1}{3}$</font>
+
+### 1. What is the Probabilistic Turing Machine (PTM)?
+
+上上章的NDTM可以看作是一个可以同时尝试所有可能性的“上帝”，而[Probabilistic Turing Machine](https://en.wikipedia.org/wiki/Probabilistic_Turing_machine)则更像一个只能尝试部分可能性的“凡人 ”。只能随机选择部分分支，所以即使面对同一个输入，既可能accept，也可能reject，甚至可能永远不停。这种图灵机衍生出了**RP**，**ZPP**等，以及本章的**BPP**。
+
+### 2. What is the complexity class BPP?
+
+**BPP (Bounded-Error probabilistic polynomial time)** 包含PTM可以在多项式时间内解决的决策问题，但是**错误率有$\frac{1}{3}$**。
+> 根据**放大引理**(amplification lemma)，错误概率可以限制为 $0$ 到 $\frac{1}{2}$ 之间的任何值（别问，问就是看不懂证明）
+
+**BPP包含着P！**，这个很好理解，当只有一个分支的时候，PTM会以 1 的概率“随机”选到这个分支，所以P是BPP的子集。
+> 同样，$P \overset{?}{=} BPP$
+
+### 3. An example of a BPP Problem
+
+曾经最著名的 BPP 中已知但 P 中未知的问题就是判断一个数是不是素数，但是2002年一个确定的多项式算法（[AKS primality test](http://en.wikipedia.org/wiki/AKS_primality_test)）证明了这个问题其实是 P 问题。
+
+另一个著名的 BPP 中已知但目前 P 中未知的问题是多项式恒等性检验（[polynomial identity testing](http://en.wikipedia.org/wiki/Schwartz%E2%80%93Zippel_lemma)），即确定一个多项式是不是恒等于 0 多项式
+
+## [Number 8: How does interaction help in computation, and what is the class IP?](https://bristolcrypto.blogspot.com/2014/12/52-things-number-8-how-does-interaction.html)

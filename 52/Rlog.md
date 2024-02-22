@@ -160,7 +160,7 @@
 
 我们确实发现了一些已知存在于 NP 中但不知道是否存在于 P 中的问题，也许未来的研究会表明这些问题也存在于 P 中。
 
-[B站相关解说](https://b23.tv/bnB8rdS)
+**[B站相关解说](https://b23.tv/bnB8rdS)**
 > 里面很有趣的一句话：如果能快速地检验答案，是否代表也有快速方法破解问题呢？
 
 许多有趣的密码系统（特别是在公钥密码中）都是基于计算问题“困难”的假设而安全的，这通常意味着“至少与 NP 中的任何问题一样困难”。
@@ -168,3 +168,19 @@
 有个很有趣的定理叫做[Cook-Levin theorem](https://en.wikipedia.org/wiki/Cook%E2%80%93Levin_theorem)，它表明 SAT 是 NP 完全问题(**NP-complete**)的第一个例子，也就是说，任何 NP 问题都可以在多项式时间内归约到 SAT。这意味着，如果我们可以在多项式时间内解决 SAT，那么我们就可以在多项式时间内解决 NP 中的任何问题。
 
 ## [Number 6: How can we interpret NP as the set of theorems whose proofs can be checked in polynomial time?](https://bristolcrypto.blogspot.com/2014/11/52-things-number-6-how-can-we-interpret.html)
+
+直接上结论：
+
+$\mathrm{NP}$ is the class of languages that have **polynomial time verifiers**.
+> 假设一个元素$x\in L$，其中$L$是一个 NP 语言，我们有一个证明器（prover）$P$，当给定$x$的时候，可以输出一个证据（witness）$w$，从$x$得到$w$的可以是指数复杂度，但如果将$x,w$给验证器（verifiers）$V$，$V$可以在多项式时间内判断$x \overset{?}{\in} L$。
+
+这个结论证明其实很直观，NDTM在上章被比作一棵树，验证就是从这棵树最顶端的叶子（$w$）往下找根($x$)的过程，这个过程非常简单。
+[正式证明](http://en.wikipedia.org/wiki/NP_(complexity)#Equivalence_of_definitions)
+> $P \overset{?}{=} NP$也可以理解为  **从叶子找根**  和  **从根找叶子**  这两个过程是不是可以一样简单？？毕竟我们没有任何证据证明**没有**简单聪明的办法从根找到叶子（解题）
+
+我们可以非常简单的想到：这个过程不就是**密码体制**的构建原理吗？$V$ 是解密算法，$w$ 是密钥，$x$ 是密文，$L$ 是明文。
+> $P$可以理解为尝试破解密码的人？或者密钥生成算法？
+> 注意不是所有 NP 问题都适合构建密码体制，因为 NP 问题是基于最差情况复杂度研究的，并不代表它的难度是均匀固定的。而密码学追求稳定的难度。
+
+因此，P vs NP 问题在密码学中可以理解为：**是否存在一个简单的方法可以破解密码？**。一旦这个问题被解决，密码学简单讲就是会崩溃~
+> 补充：整数分解问题并没有证据证明其是不是 NP-complete 问题，也没有证明它是不是 P 问题。

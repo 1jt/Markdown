@@ -127,3 +127,65 @@ $\mathrm{NP}$ is the class of languages that have **polynomial time verifiers**.
 另一个著名的 BPP 中已知但目前 P 中未知的问题是多项式恒等性检验（[polynomial identity testing](http://en.wikipedia.org/wiki/Schwartz%E2%80%93Zippel_lemma)），即确定一个多项式是不是恒等于 0 多项式
 
 ## [Number 8: How does interaction help in computation, and what is the class IP?](https://bristolcrypto.blogspot.com/2014/12/52-things-number-8-how-does-interaction.html)
+
+### 1. Interactive Proof Systems
+
+首先介绍一下交互证明系统（Interactive Proof Systems），这是由Shafi Goldwasser、Silvio Micali和Charles Rackoff在1985年提出的。这也是**零知识证明**（Zero-knowledge proof）的基础。特点就是除了所证明**断言**（**assertion**）的有效性之外，什么也不透露。与经典证明系统不同的是，交互证明系统增加了两个元素：
+
+- **randomisation**：验证器（verifier）是概率性的，有小概率会出错
+- **interaction**：证明者（prover）和验证者（verifier）之间会交互，验证过程是一个动态的过程
+
+> the set of languages of interactive proof systems is in a large complexity class **IP**.
+
+证明系统应该包含一下性质：
+
+- **Efficiency**：验证得快对吧，不然验个一百年？
+- **Soundness**：如果断言是假的，非法证明不能随便伪造
+- **Completeness**：如果断言是真的，一定存在合法证明
+
+### 2. Classical proofs
+
+具体概念参考上面和[这里](https://en.wikipedia.org/wiki/Interactive_proof_system)。
+
+主要补充一点：我们知道 NP 可以看作一个语言类（a class of languages），里面的成员都可以被快速验证（回忆叶子到根），即有一个**证书**（certificate），非成员则没有。所以 NP 正是一类经典证明语言。
+> NP is exactly the class of languages of classical proofs.
+
+### 3. Interactive Proofs
+
+首先回答一个问题：**为什么交互证明系统比经典证明系统（在某些方面）更强大？**
+
+通过举一个例子：**图同构 与 图非同构**
+> Graph Isomorphism and Graph Non-isomorphism.
+
+两个图$G,H$如果[同构](https://www.zhihu.com/question/326620873)，说明$G$通过顶点的某种重排可以变为$H$。即以下language:
+$$ISO = \{ <G,H> | G,H \text{ are isomorphic graphs} \}$$
+这个问题是一个 NP 问题，因为一旦知道重排指令，很容易就可以验证。
+
+同样的，根据图非同构问题，我们可以定义以下language：
+$$NOISO = \{ <G,H> | G,H \text{ are}\ \mathbf{not}\ \text{isomorphic graphs} \}$$
+看似只是加了一个 not，但是验证突然变得很难了，至少用经典证明很难。因为我们没办法在短时间内尝试所有的可能性然后说这俩图确实不同构。那用交互证明怎么做呢？
+
+首先假设有两个图$G_0,G_1$，验证者（verifier）随机选取一个 bit $b \in \{0,1\}$和一个置换（permutation）$\pi$，将$\pi$作用于$G_b$后得到图$H$，证明者（prover）收到$H$后，发送一个比特$b'$给验证者。验证者当且仅当$b=b'$时接受。
+
+这个协议的背后逻辑是：如果$G_0,G_1$不是同构的，那么证明者可以识别$H$来自$G_0$还是$G_1$。如果$G_0,G_1$是同构的，那么证明者没有办法识别$H$来自$G_0$还是$G_1$。相反，如果$G_0,G_1$是同构的，那么证明者的行为就像是随机的，验证者接受的概率是$\frac{1}{2}$。
+
+至此，我们发现了交互证明系统的相比经典证明系统存在着不可替代性。
+紧接着我们给出 IPS 与 IP的正式定义：
+
+**Interactive proof system**: *A pair of interactive machines* $(P,V)$ *is called an interactive proof system for a language $L$ if machine **V** is polynomial-time and the following conditions hold:*
+
+- **Completeness**: For every $x \in L$
+$$Pr[<P,V>(x)=1]\geq \frac{2}{3}$$
+- **Soundness**: For every $x \notin L$
+$$Pr[<P,V>(x)=1]\leq \frac{1}{3}$$
+
+**The class IP**: *The class **IP** consists of all languages having interactive proof systems.*
+
+显然，**IP 包含了 BPP**，如果我们将消息的交换次数限制为1，那么我们就得到了 NP，所以**IP 也包含了 NP**。
+> 可以这么理解：NP 问题可以验证对吧，而且验证过程非常简单，多项式时间内就能完成对吧，而且只交互一个证据(witness)对吧。现在 IP 都不限制交互了，所以 NP 也就是 IP 的子集了。
+> 也可以这么理解：$\{(=1)\}\subset \{ (\geq \frac{2}{3})\}$
+
+1992年，Adi Shamir证明了[IP = PSPACE](http://dl.acm.org/citation.cfm?doid=146585.146609)，这个证明是一个重要的里程碑，因为它表明了交互证明系统的强大性质。
+
+补充（看不懂没事）：请注意，在协议中，证明者有能力抛出**私人硬币**（private-coin）。如果允许 证明者 访问 验证者 的随机字符串，就会导致模型转变为与 带有**公共币**（public-coins）的交互证明 相关，复杂性类 [AM](http://en.wikipedia.org/wiki/Arthur%E2%80%93Merlin_protocol) 与这个相关。
+> If the prover is allowed to access to the verifier's random string leads to the model of interactive proofs with public-coins.

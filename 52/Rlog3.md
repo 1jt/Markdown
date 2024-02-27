@@ -70,6 +70,8 @@ $$
 
 ## [Number 11: What are the DLP, CDH and DDH problems?](https://bristolcrypto.blogspot.com/2014/12/52-things-number-11-what-are-dlp-cdh.html)
 
+这块内容英文教材基本看过了，这里简单总结一下。
+
 ### 1. The Discrete Logarithm Problem (DLP)
 
 令 $G$ 是一个Abelian群，$g$ 是 $G$ 的生成元，$h$ 是 $G$ 中的一个元素。DLP 问题是找到一个整数 $x$ 使得 $g^x = h$。
@@ -77,4 +79,33 @@ $$
 
 ### 2. The Computational Diffie-Hellman Problem (CDH)
 
+给定 $G,g,g^a,g^b$，计算 $g^{ab}$。
+> 如果我们解决了DLP，那么肯定可以解决CDH。$g^a\overset{DLP}{\rightarrow}a,(g^b)^a\rightarrow g^{ab}$
+> 所以，DLP起码和CDH一样难。DLP is at least as hard as CDH.
+
 ### 3. The Decisional Diffie-Hellman Problem (DDH)
+
+给定 $G,g,g^a,g^b,g^c$，判断 $g^{ab} = g^c$ 是否成立。
+
+另外一种表示方法：给定 $G,g,g^a,g^b,T_x$，假设$T_0$是一个随机的群元素，$T_1 = g^{ab}$，$x$ 随机取自$\{0,1\}$，find $x$。
+> 如果我们可以解决DDH（注意只需要判断$x$的正确率大于 $\frac{1}{2}$ 就行），这样就意味着即使算不出 $g^{ab}$，也一定会泄露 $g^{ab}$ 的一些信息。
+> 同样的道理，如果我们解决了CDH，那么肯定可以解决DDH。(都能算出来了还判断不了相不相等？)
+> 所以，CDH起码和DDH一样难。CDH is at least as hard as DDH.
+
+总结：DLP is the most hard, then CDH and then DDH.
+
+## [Number 12: What is the elliptic curve group law?](https://bristolcrypto.blogspot.com/2014/12/52-things-number-12-what-is-elliptic.html)
+
+仍然只是简单总结一下：
+
+椭圆曲线是一个二元三次方程，但是我们一般采用 Weierstrass 形式：
+$$
+y^2 = x^3 + ax + b
+$$
+其中 $a,b \in \mathbb{F}_p$，$4a^3 + 27b^2 \neq 0$。
+
+椭圆曲线的加法用一张图足矣
+![Alt text](assets/Rlog3/image.png)
+
+## [Number 13: Number 13: Outline the use and advantages of projective point representation.](https://bristolcrypto.blogspot.com/2015/01/52-things-number-13-outline-use-and.html)
+

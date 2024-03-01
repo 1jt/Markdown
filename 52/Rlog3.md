@@ -109,3 +109,64 @@ $$
 
 ## [Number 13: Number 13: Outline the use and advantages of projective point representation.](https://bristolcrypto.blogspot.com/2015/01/52-things-number-13-outline-use-and.html)
 
+### 1. What is a projective point?
+
+什么是投影点？
+
+令 $c,d$ 为正整数，$K$ 是一个域（field，特征不为 2 或 3），$K^3\backslash \{0,0,0\}$上存在一个等价关系“$\sim$”：
+$$
+(X_1,Y_1,Z_1) \sim (X_2,Y_2,Z_2) \ if\  \exists \lambda \in K^* \quad s.t. \quad X_1 = \lambda^c X_2, Y_1 = \lambda^d Y_2, Z_1 = \lambda Z_2
+$$
+包含$(X,Y,Z)\in K^3\backslash \{0,0,0\}$的等价类为：
+$$
+(X:Y:Z) = \{(\lambda^c X, \lambda^d Y, \lambda Z):\lambda \in K^* \}
+$$
+现在我们有了投影点 $(X:Y:Z)$ 和它的表示形式 $(X,Y,Z)$。
+
+上面是通用格式，我们一般采用 Jacobian 坐标系，其中 $Z \neq 0$，在这种表示中，投影点 $(X:Y:Z)$ 对应于仿射点(affine point) $(\frac{X}{Z^2},\frac{Y}{Z^3})$。
+
+### 2. What are the advantages to using projective point representation?
+
+投影点表示可以提高计算效率，因为它可以减少计算中除法的次数。
+> 场反演（field inversion）是计算中最慢的操作之一。
+
+计算开销对比如下：
+![Alt text](assets/Rlog3/image-1.png)
+
+消除inversion算法，代价是增加了一些乘法和加法，但是这些操作在计算机上运行的代价要小得多。
+
+p.s.：[缺点]((https://www.iacr.org/archive/eurocrypt2004/30270258/projective.pdf))是可能在实现中泄露一些额外信息？？
+
+## [Number 14: Number 14: What is a cryptographic pairing?](https://bristolcrypto.blogspot.com/2015/01/52-things-number-14-what-is.html)
+
+### 1. Pairing
+
+一个 **pairing** 是一个映射 $e:G_1 \times G_2 \rightarrow G_3$，其中 $G_1,G_2,G_3$ 是三个循环群，生成元分别是$g_1,g_2,g_3$，阶为 $q$，需要满足以下条件：
+
+1. 双线性(**bilinearity**)：$\forall A,B \in G_1,C,D \in G_2 :e(A+B,C) = e(A,C)\cdot e(B,C)\ and\ e(A,C+D) = e(A,C)\cdot e(A,D)$
+2. 非简并性(**non-degeneracy**)：$e(g_1,g_2) \neq 1$
+3. 有效性(**efficiency**)：$e$运算可以快速完成
+
+### 2. Types of pairing
+
+- Type 1: $G_1 = G_2$
+- Type 2: $G_1 \neq G_2$，但存在从 $G_2$ 到 $G_1$ 的有效可计算同构，可将 $g_2$ 映射到 $g_1$。
+- Type 3: $G_1 \neq G_2$，且不存在有效可计算同构。
+
+后两个被称为非对称pairing，第一个被称为对称pairing。
+
+### 3. Warings and Applications
+
+**warings:**
+在Type 1 和 2 中，DDH 问题很容易被解决，只需要计算 $e(g^x,g^y)\overset{\$}{=}e(g^z,g)$ 即可。
+> 这不代表Type 3是安全的
+
+**applications:**
+
+- cryptanalysis
+- Identity Based Encryption
+- Attribute Based Encryption
+- Leakage Resilient Cryptography
+- $\cdots$
+
+> 它和椭圆曲线也联系密切，后期会讲

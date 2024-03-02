@@ -69,7 +69,7 @@ ECIES 经常与一个对称加密方案和一个 MAC 方案一起使用。
 
 1. 选择一个随机整数 $k \in [1,n-1]$
 2. 计算 $R=kP,z=kQ$，$Z$ 不能是 $\infty$
-3. 计算 $(k_1,k_2)=KDF(x_Z,R)$，其中 $x_Z$ 是 $Z$ 的 $x$ 坐标 
+3. 计算 $(k_1,k_2)=KDF(x_Z,R)$，其中 $x_Z$ 是 $Z$ 的 $x$ 坐标
 4. 计算 $c=Enc_{k_1}(m)$，$t=MAC_{k_2}(c)$
 5. 输出密文 $(R,c,t)$
 
@@ -86,4 +86,160 @@ ECIES 经常与一个对称加密方案和一个 MAC 方案一起使用。
 
 ## [Number 16: Describe the key generation, signature and verification algorithms for DSA, Schnorr and RSA-FDH.](https://bristolcrypto.blogspot.com/2015/01/52-things-number-15-describe-key.html)
 
+### 1. Digital Signature Scheme (DSA)
 
+> 也叫 Digital Signature Standard (DSS)
+
+安全性基于计算离散对数的困难性。此外，没有在标准模型下的已知证明。
+
+#### 1.1 Domain Parameter Generation
+
+1. 选择一个素数 $p$，其中 $2^{L−1}<p<2^L$，$L$ 是 64 的倍数，且 $512≤L≤1024$。
+2. 选择 $p−1$ 的素因数 $q$，其中 $2^{159}<q<2^{160}$。
+3. 计算 $q$ 阶子群的生成元 $g$：选择一个随机整数 $r$，其中 $1<r<p−1$，令 $g=r^{(p−1)/q}\ mod\ p$ 且 $g\neq1$。
+
+> 了解即可
+
+#### 1.2 Key Generation
+
+1. 选择一个随机整数 $x$，其中 $0<x<q$。
+2. 计算 $y=g^x\ mod\ p$。
+
+公钥是 $y$，私钥是 $x$。
+
+#### 1.3 Signing
+
+1. 选择一个随机整数 $k$，其中 $0<k<q$。
+2. 计算 $r=(g^k\ mod\ p)\ mod\ q$。
+3. 计算 $s=k^{-1}\cdot(H(m)+x\cdot r)\ mod\ q$，其中 $H(m)$ 是消息 $m$ 的哈希值（SHA-1）。
+
+对消息 $m$ 的签名是 $(r,s)$。
+
+#### 1.4 Verification
+
+1. 计算 $u_1=H(m)\cdot s^{-1}\ mod\ q$。
+2. 计算 $u_2=r\cdot s^{-1}\ mod\ q$。
+3. 计算 $v=(g^{u_1}\cdot y^{u_2}\ mod\ p)\ mod\ q$。
+4. 如果 $v=r$，则签名有效。
+
+#### 1.5 Correctness
+
+$$
+v=g^{u_1}\cdot y^{u_2}=g^{H(m)\cdot s^{-1}}\cdot g^{x\cdot r\cdot s^{-1}}=g^{H(m)\cdot s^{-1}+x\cdot r\cdot s^{-1}}=g^{(H(m)+x\cdot r)\cdot s^{-1}}=g^k=r
+$$
+
+### 2. Schnorr Signature Scheme
+
+Schnorr 签名是一种重要的基于 DLP 的签名方案。它适用于任何素数阶群，并且其安全性在 DL 假设下的随机预言模型中得到了证明。
+
+#### 2.1 Domain Parameter Generation
+
+1. 选择一个素数 $p$
+2. 选择一个 $p-1$ 的素因数 $q$
+3. 选择 $q$ 阶子群的生成元
+
+#### 2.2 Key Generation
+
+1. 选择一个随机整数 $x$，其中 $0<x<q$
+2. 计算 $y=g^x\ mod\ p$
+
+公钥是 $y$，私钥是 $x$
+
+#### 2.3 Signing
+
+1. 选择一个随机整数 $k$，其中 $0<k<q$
+2. 计算 $a=g^k\ mod\ p$
+3. 计算 $r=H(m||a)$
+4. 计算 $s=(k+x\cdot r)\ mod\ q$
+
+对消息 $m$ 的签名是 $(r,s)$
+
+#### 2.4 Verification
+
+1. 计算 $v=g^s\cdot y^{-r}\ mod\ p$
+2. 如果 $v=a$，则签名有效
+
+#### 2.5 Correctness
+
+$$
+v=g^s\cdot y^{-r}=g^{k+x\cdot r}\cdot g^{-r\cdot x}=g^k\cdot g^{x\cdot r}\cdot g^{-r\cdot x}=a
+$$
+
+### 3. RSA-FDH
+
+RSA-FDH (full domain hash)是一种基于 RSA 的签名方案，遵循 **hash-then-sign** paradigm。它利用哈希函数（哈希函数的输出范围等于 RSA 模数）为普通 RSA 签名方案生成看起来随机的输出。因此，它可以防止对普通 RSA 签名方案的代数攻击，并且能够对任意长度的消息进行签名。但在实践中很难创建这样的哈希函数。 RSA-FDH 可以在随机预言模型中证明是 EU-CMA 安全的。
+
+#### 3.1 Key Generation
+
+1. 选择两个大素数 $p,q$，计算 $N=p\cdot q$
+2. 选择一个整数 $e$，其中 $1<e<\phi(N)$ 且 $gcd(e,\phi(N))=1$
+3. 计算 $d=e^{-1}\ mod\ \phi(N)$
+
+公钥是 $(N,e)$，私钥是 $(d,p,q)$
+
+#### 3.2 Signing
+
+1. 计算 $s=H(m)^d\ mod\ N$
+
+对消息 $m$ 的签名是 $s$
+
+#### 3.3 Verification
+
+1. 计算 $s^e\overset{?}{=}H(m)\ mod\ N$
+
+### 4. Correctness
+
+$$
+s^e\ mod\ N=H(m)^{d\cdot e}\ mod\ N=H(m)^1\ mod\ N=H(m)
+$$
+
+## [Number 17: Describe and compare the round structure of DES and AES.](https://bristolcrypto.blogspot.com/2015/01/52-things-number-17-describe-and.html)
+
+DES 与 AES 都属于迭代分组密码（iterated block ciphers），特点：
+
+- 通过重复使用简单的轮函数获得安全性
+- 轮数 $r$ 可变，一般 $r$ 越大，安全性越高
+- 每轮的轮密钥都是主密钥通过 key schedule 生成的
+- 轮加密是一个可逆的过程，注意轮函数本身n不一定是可逆的
+
+### 1. **DES**
+
+1. 本质属于 Feistel 网络
+
+$$
+L_{i+1}=R_i\\
+R_{i+1}=L_i\oplus F(R_i,K_i)
+$$
+
+2. 轮函数 $F$ 本身不需要可逆，我们只需要使用相反顺序的轮密钥来解密即可；加解密使用相同的操作
+3. 参数：
+   - 轮数：16
+   - 分组长度：64 bits
+   - 密钥长度：56 bits
+   - Feistel 迭代之前和之后执行一次permutation
+4. 轮函数操作（具体不写，没意思）：
+   - Expansion Permutation
+   - Round Key Addition
+   - Splitting
+   - S-Box
+   - P-Box
+
+### 2. **AES**
+
+1. 不依赖于 Feistel 网络，而是使用了 SPN（Substitution-Permutation Network）
+2. 加密和解密操作不同，基于 $F_2^8$ 上的有限域运算
+3. 参数：
+   - 轮数：10/12/14
+   - 分组长度：128 bits
+   - 密钥长度：128/192/256 bits
+4. 轮函数操作（具体不写，没意思）：
+   - SubBytes
+   - ShiftRows
+   - MixColumns
+   - AddRoundKey
+
+## [Number 18: Draw a diagram (or describe) the ECB, CBC and CTR modes of operation](https://bristolcrypto.blogspot.com/2015/02/52-things-number-18-draw-diagram-or.html)
+
+[ECB]
+[CBC]
+[CTR]

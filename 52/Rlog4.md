@@ -240,6 +240,24 @@ $$
 
 ## [Number 18: Draw a diagram (or describe) the ECB, CBC and CTR modes of operation](https://bristolcrypto.blogspot.com/2015/02/52-things-number-18-draw-diagram-or.html)
 
-[ECB]
-[CBC]
-[CTR]
+密码学必学内容，具体自己看对应链接，这里只简单过一下
+
+分组密码可以解决一个块的加密问题，而**操作模式**（Modes of operation）可以解决多个块的加密问题。
+
+**[ECB](https://en.wikipedia.org/wiki/File:ECB_encryption.svg)**
+明文被分为 $m$ 个块，每个块使用相同的密钥单独加密，但重复的明文块会产生相同的密文块.
+![Alt text](assets/Rlog4/image.png)
+**[CBC](https://en.wikipedia.org/wiki/File:CBC_encryption.svg)**
+CBC 模式消除了 ECB 模式的局限性。每个明文在加密之前都与先前的密文进行异或，其中第一个明文块与随机初始化向量 (IV) 进行异或。CBC是实践中最常用的模式。
+![Alt text](assets/Rlog4/image-1.png)
+**[CTR](https://en.wikipedia.org/wiki/File:CTR_encryption_2.svg)**
+它在某种意义上就像流密码。 CTR 模式通过重复加密“计数器”的连续值来生成密钥流。
+![Alt text](assets/Rlog4/image-2.png)
+
+p.s.：一些操作模式除了保证明文的机密性之外，还保证其真实性。有关更多信息，请参阅 [AEAD](https://en.wikipedia.org/wiki/Authenticated_encryption) 模式。
+
+## [Number 19: The Shamir secret sharing scheme.](https://bristolcrypto.blogspot.com/2015/02/52-things-number-19-shamir-secret.html)
+
+如果我们有一个秘密 $S$ 和 $n$ 个参与方，我们可以将 $S$ 分成 $n$ 个部分并将其分发给各个参与方。秘密可以以这样的方式划分：可以设置阈值 $k$，使得当秘密 $S$ 的 $k$ 部分已知时，可以计算整个秘密。如果 $S$ 的 $k−1$ 或更少部分已知，则无法计算 $S$。该方案称为 $(k,n)$ threshold scheme。
+
+以一个例子说明：

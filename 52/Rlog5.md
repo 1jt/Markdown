@@ -1,5 +1,7 @@
 # What did you learn？
 
+> Cryptographic Implementation Details'
+
 ## [Number 21: How does the CRT method improve performance of RSA?](https://bristolcrypto.blogspot.com/2015/02/52-things-number-21-how-does-crt-method.html)
 
 **The Chinese Remainder Theorem (CRT) 中国剩余定理：**
@@ -34,10 +36,143 @@ p.s.：$q^{-1}\ mod\ p\cdot q+p^{-1}\ mod\ q\cdot p=1\ mod \ N$
 
 这个连问题都看不懂了属于是
 
-[Montgomery](https://blog.csdn.net/bjarnecpp/article/details/77644958)
+### 1. Secure and Efficient
 
+虽然密码学的目标是设计高度安全的密码协议，但还必须能够有效地实现这些协议，以便可以一遍又一遍地执行这些协议，而不会减慢用户的速度，例如在线购物或转账通过网上银行。因此，需要采取措施最大限度地减少这些协议中使用的每种算法的计算成本。此类算法中使用的最昂贵的运算之一是对某些 $n>0$ 进行 reduction of integers modulo，因为它实际上是除法运算。
 
+### 2. The Cost of Modular Reductions
 
+假如我们知道 $a\ mod\ n,b\ mod\ n$，现在想计算 $ab\ mod\ n$。我们可以计算 $ab$，然后再对 $n$ 取模。一次乘法倒是还好，但是多次这样的计算成本会很高，比如 $c=m^e$ ,需要迭代 $e$ 次，每次都要取模，$e$ 可不是一个小数目。一个解决办法是先把乘法算完了最后模。但这样的话，我们必须得存储（并计算）非常非常大的数字。肿么办？
 
+### 3. "Montgomery Space"
 
+[Montgomery](https://blog.csdn.net/bjarnecpp/article/details/77644958) 提出了一种方法，可以在不进行模运算的情况下进行乘法。这种方法是通过引入一个称为 Montgomery 空间的新空间来实现的。在这个空间中，我们可以进行乘法，而不需要进行模运算。然后，我们可以将结果转换回普通的空间，而不需要进行模运算。这种方法的关键是选择一个称为 Montgomery 模数的特殊模数。这个模数是一个方便的模数，通常是 2 的幂。
 
+为什么这个模数是方便的呢？因为我们可以通过移位来实现模运算。假设我们有一个数 $x$，与特殊模数 $r=2^k$，将 $x$ 变为二进制串
+
+- 计算 $x\ mod\ r$，只需要保留 $x$ 最低的 $k$ 位
+- 计算 $xr$，只需将 $x$ 左移动 $k$ 位
+- 计算 $x/r$，只需将 $x$ 右移动 $k$ 位
+
+### 4. Montgomery Algorithm
+
+$a,b,n,r$，其中$gcd(n,r)=1$，且 $r>n$，我们可以计算 $ab\ mod\ n$：
+
+1. 通过扩展欧几里得算法计算 $rr^{-1}=1+nn'$
+   >这步很快的。而且因为 $r$ 是 2 的幂，$n$ 是奇数，所以 $gcd(n,r)=1$，所以肯定有解
+2. 计算$\bar{a}=ar\ mod\ n$与$\bar{b}=br\ mod\ n$
+   > $a\times r$这步也很快，因为 $r$ 是 2 的幂，所以只需要移位
+   > $mod\ n$ 这步开销比较大，甚至比naive的算法还要大，所以本算法更适用于少数 multiplier 多次相乘的情况（e.g. $a^mb^{m'}$），这样结果可以多次重复使用步骤 2，3 的结果
+3. 计算$u=abr\ mod\ n$
+   > 每一步都很快
+   - $t\leftarrow \bar{a}\bar{b}$
+   - $u\leftarrow (t+(n't\ mod\ r)n)/r$
+   - if $u\geq n$ then $u\leftarrow (u-n)$
+   - output $u$
+4. Multiply $u$ by $r^{−1}$ and reduce modulo $n$
+   > 同 2
+
+**正确性**：
+$$
+u = abr\ mod\ n\\
+=arbrr^{-1}\ mod\ n\\
+=tr^{-1}\ mod\ n\\
+=trr^{-1}/r\ mod\ n\\
+=t(1+nn')/r\ mod\ n\\
+=((t+nn't)/r+mn)\ mod\ n\\
+=(t+(n't+mr)n)/r\ mod\ n\quad for\ any\ m\\
+(选择一个合适的 m)\overset{n't+mr=(n't\ mod\ r)}{=}(t+(n't\ mod\ r)n)/r\ mod\ n
+$$
+> 可以发现没有$\ mod\ n$ 的操作。
+
+因为 $n>r>0$，可以得出 $n^2<rn\Rightarrow n^2+rn<2rn\Rightarrow(n^2+rn)/r<2n$
+所以$(t+(n't\ mod\ r)n)/r<2n$，因此不需要$\ mod\ n$，只需要看情况减去 $n$ 即可。
+
+## [Number 23: Write a C program to implement Montgomery arithmetic.](https://bristolcrypto.blogspot.com/2015/03/52-things-number-22-write-c-program-to.html)
+
+自己写了一个
+
+```c
+#include <stdio.h>
+
+// 求模逆
+int mod_inverse(int a, int m) {
+    int m0 = m, t, q;
+    int x0 = 0, x1 = 1;
+    if (m == 1) {
+        return 0;
+    }
+    while (a > 1) {
+        q = a / m;
+        t = m;
+        m = a % m, a = t;
+        t = x0;
+        x0 = x1 - q * x0;
+        x1 = t;
+    }
+    if (x1 < 0) {
+        x1 += m0;
+    }
+    return x1;
+}
+
+// 计算Montgomery reduction
+int montgomery_reduction(int a, int b, int n, int r, int r_inv) {   
+    int n_apo = (r*r_inv - 1)/n;
+    
+    int a_bar = a * r % n;
+    int b_bar = b * r % n;
+    int t = a_bar * b_bar;
+    int m = t * n_apo % r;
+    int u = (t + m * n) / r;
+    
+    if (u >= n) {
+        return u - n;
+    } else {
+        return u;
+    }
+}
+
+int main() {
+    int a = 123; // 输入参数a
+    int b = 456; // 输入参数b
+    int n = 1009; // 模数n
+    int r = 1 << 10; // 选择r为2的8次方，且r > n
+    int r_inv = mod_inverse(r, n);
+
+    int u = montgomery_reduction(a, b, n, r, r_inv);
+    int result = u * r_inv % n;
+    printf("Montgomery reduction of %d and %d modulo %d is: %d\n", a, b, n, result);
+
+    return 0;
+}
+```
+
+## [Number 24: Describe the binary, m-ary and sliding window exponentiation algorithms.](https://bristolcrypto.blogspot.com/2015/02/52-things-number-24-describe-binary-m.html)
+
+> 继续考虑一些计算模幂（modular exponentiations）的不同方法，例如计算：$X^E\ mod\ N$。
+
+### 1. Binary
+
+[The binary modular exponentiation](https://blog.csdn.net/qq_42146775/article/details/102635980)
+举例：
+![Alt text](assets/Rlog5/image.png)
+可以看出前一个基数的幂是后一个基数幂的平方，所以我们假设第一个基数为 $b_1$，第二个为 $b_2$，依次类推
+![Alt text](assets/Rlog5/image-1.png)
+现在我们合并一下，即每个先乘以低位mod的结构，再mod
+![Alt text](assets/Rlog5/image-2.png)
+我们再优化一下，指数等于 0是没有必要乘的，但是我们任然需要计算基数，方便下一个直接平方
+![Alt text](assets/Rlog5/image-3.png)
+其实上面每次算基数时，我们仍然可以mod 497
+![Alt text](assets/Rlog5/image-4.png)
+
+每一步都有两个操作
+
+1. (假如幂是 1 执行，是 0 直接执行第二步)：基数(记为 $B$ ) 乘前一位的结果 (记为 $R$)
+2. 基数 $B$ 平方且mod n为下一次作准备 $B^2\ mod\ n$
+
+### 2. m-ary
+
+$m$ 进制与 Binary 相似，后者是把每个元素看作一个bit，而前者是看作 $m$ 个bit，即一共 $M=2^m$ 个元素。Binary 可以认为是 $M=2$ 的m-ary。
+
+工作原理：首先我们为 $i=1\ to\ 2^m−1$ 的所有 $X^i$ 计算一个查找表。然后，我们将指数 $E$ 变为以 $M$ 为底。然后，对于 E 中的每个“项”，我们只需从表中查找适当的值，然后我们不加倍，而是移位 m。与二进制技术相比，这意味着更多的预计算（即计算更多的 X 次幂），因此需要更多的空间，但作为回报，必须进行更少的乘法。

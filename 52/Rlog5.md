@@ -173,6 +173,31 @@ int main() {
 
 ### 2. m-ary
 
-$m$ 进制与 Binary 相似，后者是把每个元素看作一个bit，而前者是看作 $m$ 个bit，即一共 $M=2^m$ 个元素。Binary 可以认为是 $M=2$ 的m-ary。
+$m$ 进制与 Binary 相似，后者是把每个元素看作一个bit，而前者是看作 $m$ 个bit，即一共 $M=2^m$ 个元素。Binary 可以认为是 $M=2$ 的 1-ary。
 
-工作原理：首先我们为 $i=1\ to\ 2^m−1$ 的所有 $X^i$ 计算一个查找表。然后，我们将指数 $E$ 变为以 $M$ 为底。然后，对于 E 中的每个“项”，我们只需从表中查找适当的值，然后我们不加倍，而是移位 m。与二进制技术相比，这意味着更多的预计算（即计算更多的 X 次幂），因此需要更多的空间，但作为回报，必须进行更少的乘法。
+工作原理：首先我们为 $i=1\ to\ 2^m−1$ 的所有 $X^i$ 计算一个查找表。然后，我们将指数 $E$ 变为以 $M$ 为底。然后，对于 $E$ 中的每个“项”，我们只需从表中查找适当的值，然后我们不加倍，而是移 $m$ 位。
+> 例如：$m=3,M=2^3=8,E=35=(43)_8,X^{(43)_8}=X^{4*8}\cdot X^{3}=X^{4*2^3}\cdot X^{3}$
+> 没看懂为啥是移 $m$ 位, **我的理解是连续三次平方，Binary 是平方一次**
+> 原文：Then, we work our way through the exponent E (in base M). Then, for each 'term' in E we simply look up the appropriate value from our table, and then instead of doubling we shift by m.
+
+与 Binary 相比，这意味着更多的预计算（即计算更多的 $X$ 次幂），因此需要更多的空间，但作为回报，可以进行更少的乘法。
+
+### 3. Sliding Window
+
+是对 m-ary 的一次优化
+> 但我连 m-ary 都没看懂...
+
+假设 $m=4,E=22=(0,0,0,1,0,1,1,0)_2=(1,6)_{2^4}$
+
+然后我们可以使用 4-ary，但如果我们“重新定位”窗口，也许可以做得更好：毕竟只有 3 个位置为了 1，并且它们都在范围为 4 的窗口内。如果我们提前知道这一点，我们就可以在该位置应用我们的查找表，因此只需要进行一次查找。
+> $X^{22}=X^{16}\cdot X^{6}=X^{2^4}\cdot X^{6}=X^{11}\cdot X^{2}$
+> 这样的话，我们需要利用预先计算的 $X^{11}$，$X^{2}$
+
+所以我们首先将 $X$ 转为二进制，这样需要更多的预计算，但是如果 $X$ 足够稀疏，那么我们可以通过滑动窗口法可以节省不少时间。
+
+## [Number 25: Methods for modular reduction using "special" primes that define $GF(p)$ and $GF(2^n)$](https://bristolcrypto.blogspot.com/2015/03/52-things-number-25-methods-for-modular.html)
+
+modulo operation 使用量很大，但是不好操作，之前的 Montgomery representation （22 章）是一个优化方法，现在我们来看看另一个优化方法———— **Psudo-Mersenne Prime reduction**
+
+
+

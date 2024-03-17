@@ -293,3 +293,63 @@ OUTPUT: z(x)
 ## [Number 26: Describe the NAF scalar multiplication algorithm.](https://bristolcrypto.blogspot.com/2015/04/52-things-number-26-describe-naf-scalar.html)
 
 NAF 标量乘法算法是标量乘法的增强形式，其中使用非相邻形式（**Non-Adjacent Form**, NAF）表示减少了算法的预期运行时间。
+
+这里的标量乘法是指在椭圆曲线密码学中的标量乘法，即 $Q=k\cdot P$，其中 $k$ 是一个整数，$P$ 是一个点。一般是倍点运算与点加运算的组合：
+> point doubling and point addition
+
+把 $k$ 表示为二进制形式，即 $k=\sum_{i=0}^{n-1}k_i2^i$，其中 $k_i\in\{0,1\}$，我们可以得到 $Q$：
+
+```fakecode
+// 从右到左
+INPUT: P, k={k_{n-1},...,k_1,k_0}
+OUTPUT: Q=k*P
+    Q←∞
+    for i from 0 to t-1 do
+        if k_i=1 then Q←Q+P
+        P←2P
+return Q
+
+// 从左到右
+INPUT: P, k={k_{n-1},...,k_1,k_0}
+OUTPUT: Q=k*P
+    Q←∞
+    for i from t-1 to 0 do
+        Q←2Q
+        if k_i=1 then Q←Q+P
+return Q
+```
+
+由于一个 $k$ bits 的字符串中 1 的数量平均下来是一半，所以大概需要 $k/2$ 次点加运算与 $k$ 次倍加运算。
+$$
+\frac{k}{2}\cdot A+k\cdot D
+$$
+
+咱们现在就是要优化这个算法，使得点加运算的次数尽可能少。
+> 背景介绍：In 1951, Booth proposed a new **scalar binary representation called signed binary method** and later Rietweisner proved that every integer could be uniquely represented in this format . More particularly, If $P=(x,y)\in E(\mathbb{F}_q)$ then $−P=(x,x+y)$ if $\mathbb{F}_q$ is a binary field, and $−P=(x,−y)$ if $\mathbb{F}_q$ has characteristic $> 3$. Thus subtraction of points on an elliptic curve is just as efficient as addition.
+
+优化方法就是 A particularly useful signed digit representation is the non-adjacent form (NAF). NAF 就是将一个 $k$ 的表示为，$k=\Sigma^{l-1}_{i=0}k_i\cdot 2^i$，其中 $k_i\in\{0,1,-1\}$，且没有相邻的非 0。
+
+```fakecode
+> 其中 1 和 -1 交替出现，且相邻的 1 之间至少有一个 0。这样的话，我们可以得到一个优化的算法：
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

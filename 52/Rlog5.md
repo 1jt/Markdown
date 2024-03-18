@@ -327,29 +327,88 @@ $$
 咱们现在就是要优化这个算法，使得点加运算的次数尽可能少。
 > 背景介绍：In 1951, Booth proposed a new **scalar binary representation called signed binary method** and later Rietweisner proved that every integer could be uniquely represented in this format . More particularly, If $P=(x,y)\in E(\mathbb{F}_q)$ then $−P=(x,x+y)$ if $\mathbb{F}_q$ is a binary field, and $−P=(x,−y)$ if $\mathbb{F}_q$ has characteristic $> 3$. Thus subtraction of points on an elliptic curve is just as efficient as addition.
 
-优化方法就是 A particularly useful signed digit representation is the non-adjacent form (NAF). NAF 就是将一个 $k$ 的表示为，$k=\Sigma^{l-1}_{i=0}k_i\cdot 2^i$，其中 $k_i\in\{0,1,-1\}$，且没有相邻的非 0。
+优化方法就是使用 a particularly useful signed digit representation is the non-adjacent form (NAF)。 NAF 就是将一个 $k$ 的表示为，$k=\Sigma^{l-1}_{i=0}k_i\cdot 2^i$，其中 $k_i\in\{0,1,-1\},k_{l-1}\neq 0$，且**没有相邻的非 0**。 NAF 的长度是 $l$。
+
+NAF 有如下属性：
+
+1. $k$ 有唯一的 NAF 表示： $NAF(k)$
+2. $NAF(k)$ 在 $k$ 的任何有符号数字表示中具有最少的非零数字。
+3. $NAF(k)$ 的长度比 $k$ 的二进制长度最多多1。
+4. 如果 $NAF(k)=l$，则 $\frac{2^l}{3}<k<\frac{2^{l+1}}{3}$
+5. 所有长度为 $l$ 的 NAF 中非零数字的平均密度约为 1/3
+
+$NAF(k)$ 可以用如下方法得到：
 
 ```fakecode
-> 其中 1 和 -1 交替出现，且相邻的 1 之间至少有一个 0。这样的话，我们可以得到一个优化的算法：
+INPUT: A positive integer k
+OUTPUT: NAF(k)
+    i←0
+    while k>=1 do
+        if k is odd then
+            k_i←2−(k mod 4)
+            k←k−k_i
+        else
+            k_i←0
+            k←k/2
+            i←i+1
+return all k_i
+```
 
+C 语言实现：
 
+```cpp
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
 
+void naf_conversion(int k) {
+    int naf[100]; // 用于存储NAF表示形式
+    int i = 0;
 
+    while (k != 0) {
+        if (k % 2 == 1) {
+            naf[i] = 2 - (k % 4);
+            k = k - naf[i];
+        }
+        else {
+            naf[i] = 0;
+        }
+        k = k / 2;
+        i++;
+    }
 
+    printf("The NAF representation of the input is: ");
+    for (int j = i - 1; j >= 0; j--) {
+        printf("%d ", naf[j]);
+    }
+    printf("\n");
+}
 
+int main() {
+    int k;
+    printf("Enter an integer to convert to NAF format: ");
+    scanf("%d", &k);
 
+    naf_conversion(k);
 
+    return 0;
+}
+```
 
+重点来了! 咱们修改从左到右的标量乘法算法，使得其可以使用 NAF 表示：
 
+```fakecode
+INPUT: P, k
+OUTPUT: Q=k*P
+    Based on previous algorithm compute NAF(k)
+    Q←∞
+    for i from l-1 to 0 do
+        Q←2Q
+        if k_i=1 then Q←Q+P
+        if k_i=-1 then Q←Q-P
+return Q
+```
 
-
-
-
-
-
-
-
-
-
-
-
+基于 NAF 的第三个和第五个属性，NAF 标量乘法算法的预期运行时间大约为
+$$
+\frac{k}{3}\cdot A+k\cdot D
+$$

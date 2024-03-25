@@ -61,13 +61,26 @@ $$
 ## [Number 29: What is the UF-CMA security definition for digital signatures?](https://bristolcrypto.blogspot.com/2015/04/52-things-number-29-what-is-uf-cma.html)
 
 在之前的文章中我们介绍了 DSA, Schnorr and RSA-FDH（#16）签名算法的细节
-
 现在我们来看看签名系统及其安全性。
 
 1. 签名系统的定义
+签名方案用于证明消息的来源
 A signature scheme $S$ is a tuple of algorithms $(KG,Sign,VRFY)$ :
     - $KG$ is a randomised algorithm which outputs a secret key $sk$ and a public key $pk$.
     - $Sign$ is a (possibly) randomised algorithm which on input $sk$ and a message $m$ it outputs a signature $\sigma$
     - $VRFY$ is a deterministic (non-stateful) algorithm which takes in the public key $pk$, a message $m$ and a signature $\sigma$ and returns 1 if $\sigma$ is a signature on $m$ and 0 otherwise
 
+2. UF-CMA security
+   需要玩下面这个游戏：
+
+    - The game runs $KG$ to get $(p_k,s_k)$
+    - The adversary A is given $p_k$ and can then send messages $m_i$ to the game and get back signatures $\sigma_i$ under the secret key $s_k$
+    - A must output a pair $(m^∗,\sigma^∗)$
+    如果 A $\sigma^∗$ 是 $m^∗$ 的签名，且 $m^∗$ 不是 A 之前询问过的消息，那么我们就说 A 获胜。
+
+    UF-CMA security 就是说 A 获胜的概率是可以忽略的。
+
+## [Number 30: Roughly outline the BR security definition for key agreement](https://bristolcrypto.blogspot.com/2015/05/52-things-number-30-roughly-outline-br.html)
+
+> 主要是关于 authenticated key exchange 的安全性定义
 

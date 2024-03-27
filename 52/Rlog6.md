@@ -44,7 +44,7 @@ IND-CCA security : **Ind**istinguishable **C**hosen **C**iphertext **A**ttack
 
 6. The adversary is allowed to enquire for more encryptions or decryptions, as in step 3, but he is not allowed to ask for the decryption of $c$
 
-7. A outputs $b'^′'\in\{0,1\}$. A wins if $b=b'$
+7. A outputs $b^′\in\{0,1\}$. A wins if $b=b'$
 
 我们说 the **advantage** of A is $Adv(A)=2∣Pr[A\ wins]−1/2∣$. A scheme is said to be IND-CCA secure if the said advantage is negligible.
 
@@ -84,3 +84,52 @@ A signature scheme $S$ is a tuple of algorithms $(KG,Sign,VRFY)$ :
 
 > 主要是关于 authenticated key exchange 的安全性定义
 
+密钥交换一直是个非常难以解决的问题，光从定义角度看都比简单的加密要难好多，即使是著名的 [Diffie-Hellman protocol](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange), 都不能保证认证性。
+> 例如存在中间人攻击
+
+为了模型化这些攻击，于是有了两种方法来进行安全性定义：
+
+1. symbolic model
+采用形式化的技术来对协议进行建模和分析，例如 [BAN logic](https://en.wikipedia.org/wiki/BAN_logic) 。
+优点：对于已经存在的攻击，可以很容易地对其建模，可以很好的识别攻击；也可以使用 theorem provers 使证明半自动化
+缺点：底层逻辑很难捕捉到所有类别的攻击，所以使用该模型分析出的安全性没那么靠谱
+
+2. computational model
+1993年，[Bellare and Rogaway](https://seclab.cs.ucdavis.edu/papers/Rogaway/eakd.pdf) 为认证密钥交换提出了在计算模型中的基于游戏的安全性定义，即 BR security definition。非常类似于 IND-CPA 和 IND-CCA。
+
+现在我们不需要考虑系统是不是单纯的牢不可破，而是量化攻击者成功的概率。
+所以也不用具体化攻击者的能力，我们直接给一个概念能力： **所有的通信都在敌手的控制之下**
+> read, modify, delay, replay, etc.
+> paper原话：The adversary can deliver messages out of order and to unintended recipients, and she can concoct messages of her own choosing. What is more, the adversary can conduct as many sessions as she pleases amongst the players, and she can control, for each, who is attempting to authenticate to whom.
+
+敌手还可以与其他方同时运行任意数量的协议实例。
+
+希望达到的安全性用大白话讲就是：对手让一方接受商定密钥的唯一方法是转发来自真实协议运行的诚实消息，而这样他们不可能学到任何新东西。
+> The intuition behind the AKA security game is that the only way an adversary can get a party to accept an agreed key is by forwarding honest messages from a genuine protocol run, in which case they cannot possibly learn anything new.
+
+这个安全性游戏包含很多不同的预言机供敌手查询，三个最主要的：
+
+- corruption oracle
+  > allows the adversary to take control of a chosen party
+- key registration oracle
+  > registers a public key for any chosen user
+- message oracle
+  > **main** oracle used for **passing messages**.
+  > Note that messages are not sent directly between the participants, instead the adversary does this using the message oracle (我感觉可以理解为控制通信)
+
+message oracle 是主要的预言机，允许敌手与各方创建协议会话（session），目标是建立短期或临时共享密钥并发送消息。当查询预言机时，可以执行以下操作之一：
+
+- 在两个用户之间启动新会话
+  > Start a new session between two users
+- 了解任意终止会话的密钥
+  > Learn the secret key of any terminated session
+- 在现有会话中发送消息并接收响应 （不太理解这有什么用？）
+  > Send a message in an existing session and receive the response
+
+这个安全性游戏遵循前面的 real-or-random paradigm
+> 选一个 bit $b$, $b=0$ 的话给敌手一个随机的密钥，$b=1$ 的话给敌手一个真实的密钥，敌手的目标就是区分这两种情况
+
+与预言机交互后，敌手选择一个已终止的会话，其中双方都没有被贿赂，并且不存在泄露过密钥的对话（不然就没意思了）。然后会这次会话的挑战密钥。猜对了 $b$ 意味着获胜。
+> 泄露密钥的会话我理解的是：1. 这个会话没有使用同样的密钥；2. 这个会话中发的消息中不包含当前的密钥
+
+## [Number 31: Number 31: Game Hopping Proof](https://bristolcrypto.blogspot.com/2015/05/52-things-number-31-game-hopping-proof.html)

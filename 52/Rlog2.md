@@ -14,6 +14,9 @@
 因此，我们通常选择**最坏情况分析**，记录特定长度的所有输入的最长运行时间，也就是需要一个**上界**，这就是大 O 表示法（Big O notation）。随着输入长度$n$的增加，我们可以忽略所有非主项以及常数系数。
 > $\mathcal{O}(t(n))=\mathcal{O}(6n^3-n^2+1)=\mathcal{O}(n^3)$
 
+标准定义：
+![Alt text](assets/Rlog2/image.png)
+
 ### 2. Turing Machines
 
 现在我们给出执行计算中最常用的模型————Turing Machines。

@@ -55,7 +55,7 @@ $$
 
 本章将讨论空间开销更小的算法，但是复杂度还是 $O(\sqrt{n})$。
 
-
+### 1. Pollard’s Rho Algorithm.
 
 
 

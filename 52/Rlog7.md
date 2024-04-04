@@ -55,7 +55,66 @@ $$
 
 本章将讨论空间开销更小的算法，但是复杂度还是 $O(\sqrt{n})$。
 
-### 1. Pollard’s Rho Algorithm.
+### 1. Pollard’s Rho Algorithm
+
+> 这个算法本来是用于[因数分解](https://www.cnblogs.com/RioTian/p/13928916.html)的
+
+令 $f:S\rightarrow S$ 为一个集合 $S$(大小为$n$) 到自身的随机映射，计算 $x_{i+1}=f(x_i)$ ，那么我们把 $x_0,x_1,x_2,\cdots$ 称为一个确定随机游走（deterministic random walk）
+> 一般选 $f(x)=(x^2+C)\ mod\ n$
+
+因为 $S$ 是有限的，所以必然会有 $x_i=x_j$，其中 $i<j$，也就形成了所谓的环。或者说，形成了一个碰撞
+> 形状就跟符号 $\rho$ 一样，$x_0$ 看做左下角起点，总会形成一个环的
+> e.g. $x_0=2,f(x)=(x^2+2)\ mod\ 2206637=317\times 6961$
+> ![Alt text](assets/Rlog7/image.png)
+
+为了找到这样一个碰撞，我们可以使用 Floyd’s cycle-finding algorithm，也就是快慢指针，即计算：
+$$
+(x_{i+1},x_{2i+2})=(f(x_i),f(f(x_{i+1})))
+$$
+总会找到一个 $x_m=x_{2m}$，其中 $m=O(\sqrt{n})$。
+
+对于 DLP，我们将 $S$ 分为三部分 $S_1,S_2,S_3$，其中 $1\in S_2$，并定义以下随机游走：
+$$
+x_{i+1}=f(x_i)=h\cdot x_i,x_i\in S_1\\
+x_{i+1}=f(x_i)=x_i^2,x_i\in S_2\\
+x_{i+1}=f(x_i)=g\cdot x_i,x_i\in S_3
+$$
+我们实际上跟踪的是 $(x_i,a_i,b_i)$，其中：
+$$
+\left\{
+\begin{aligned}
+a_{i+1}=a_i,x_i\in S_1\\
+a_{i+1}=2a_i\ mod\ n, x_i\in S_2\\
+a_{i+1}=a_i+1\ mod\ n,x_i\in S_3
+\end{aligned}
+\right.\\
+\left\{
+\begin{aligned}
+b_{i+1}=b_i+1\ mod\ n,x_i\in S_1\\
+b_{i+1}=2b_i\ mod\ n, x_i\in S_2\\
+b_{i+1}=b_i,x_i\in S_3\\
+\end{aligned}
+\right.
+$$
+我们从一个三元组 $(x_0,a_0,b_0)=(1,0,0)$ 开始，对于所有 $i$, **总有**！！
+$$
+\log_g(x_i)=a_i+b_i\log_g(h)=a_i+b_ix
+$$
+> $\log_g(h\cdot x_i)=a_i+(b_i+1)\log_g(h)$
+> $\log_g(x_i^2)=2a_i+2b_i\log_g(h)$
+> $\log_g(g\cdot x_i)=a_i+1+b_i\log_g(h)$
+
+通过利用 Floyd’s algorithm 我们可以找到一个碰撞，即 $x_m=x_{2m}$，也就是 $a_m+b_mx=a_{2m}+b_{2m}x$，也就有：$x=\frac{a_{2m}-a_m}{b_m-b_{2m}}\ mod\ n$
+如果 $x_0,x_1,x_2,\cdots$ 是由随机映射产生的，那么上述算法将在期望时间 $O(\sqrt{n})$ 内找到离散对数，即：
+$$
+\log_g(h)=x
+$$
+
+
+
+
+
+
 
 
 

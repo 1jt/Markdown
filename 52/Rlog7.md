@@ -110,8 +110,11 @@ $$
 \log_g(h)=x
 $$
 
+### 2. Pollard’s Kangaroo Method
 
+跟 Rho 算法很想，而且更适用于我们知道 $x$ 的范围的情况，i.e. $x\in[a,\cdots,b]$。
 
+令 $w=b-a$ 为 $x$ 所在区间的跨度，并定义一个非递增的数列 $S=\{s_0,\cdots,s_{k-1}\}$，均值（mean）$m$ 大约为 $N=\sqrt{w}$
 
 
 

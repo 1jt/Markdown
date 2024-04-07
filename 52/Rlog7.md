@@ -54,6 +54,7 @@ $$
 ## [Number 35: Give the rough idea of Pollard rho, Pollard "kangaroo" and parallel Pollard rho attacks on ECDLP.](https://bristolcrypto.blogspot.com/2015/06/52-things-number-35-give-rough-idea-of.html)
 
 本章将讨论空间开销更小的算法，但是复杂度还是 $O(\sqrt{n})$。
+> 说实话看到最后也没发现和 EC 有什么关系
 
 ### 1. Pollard’s Rho Algorithm
 
@@ -115,9 +116,76 @@ $$
 跟 Rho 算法很想，而且更适用于我们知道 $x$ 的范围的情况，i.e. $x\in[a,\cdots,b]$。
 
 令 $w=b-a$ 为 $x$ 所在区间的跨度，并定义一个非递增的数列 $S=\{s_0,\cdots,s_{k-1}\}$，均值（mean）$m$ 大约为 $N=\sqrt{w}$
+我们经常选择 $s_i=2^i$（因此 $m=\frac{2^k}{k}$）以及 $k \approx \frac{1}{2}\log_2(w)$，群则被分为 $k$ 个部分 $S_i,i\in[k-1]$，我们定义一个确定随机游走：$x_{i+1}=x_i\cdot g^{s_j},if\ x_i\in S_j$。
 
+现在我们计算确定性随机游走：
+首先从 $g_0=g^b$开始，然后计算 $g_{i+1}=g_i\cdot g^{s_j}$，同时设置 $c_0=b,c_{i+1}=c_i+s_j\ (mod\ q)$，最后存储 $g_N$, 发现有如下关系：
+$$
+c_N=\log_g(g_N)
+$$
+> $q$就是 $G$ 的素数阶，原文没说，但是不可能不是
 
+接下来算第二个随机游走，但是起点变为了未知点 $x$ ：
+令 $h_0=h=g^x$，并计算 $h_{i+1}=h_i\cdot g^{s_j}$，同时设置 $d_0=0,d_{i+1}=d_i+s_j\ (mod\ q)$，发现有如下关系：
+$$
+\log_g(h_i)=x+d_i
+$$
 
+综上，我们可以发现，如果 $g_i$ 和 $h_i$ 的路径相遇，那么 $h_i$ 会沿着 $g_i$ 继续走下去，所以我们最终会找到一个 $h_M=g_N$，也就是：
+$$
+c_N=\log_g(g_N)=\log_g(h_M)=x+d_M
+$$
 
+如果没有发生碰撞，那么就可以通过增加 $N$ 来继续搜索，直到发生碰撞，这个算法的期望时间复杂度为 $O(\sqrt{w})$，而存储空间是恒定的。
+> [整个算法](https://zhuanlan.zhihu.com/p/603786377)都是**没有**被证明的。这只是一个经验性的算法。也就是说，袋鼠算法甚至有可能无法解决某个DLP问题。不过据原作者'claim'，算法表现良好。另外这个算法还是被广为应用，let's believe it works well...
+> （有点丑陋
+
+### 3. Parallel Pollard Rho
+
+当我们使用基于随机游走的技术来解决 DLP 时，我们经常使用并行版本。
+$h=g^x$, group $G$, prime order $q$
+
+我们首先确定一个易于计算的函数 $H:G\rightarrow \{1,\cdots k\}$，然后定义一组乘数 $m_i=g^{a_i}h^{b_i}$，其中 $a_i,b_i\overset{\$}{\in}  [0,\cdots q-1]$
+> $k$ 通常为 20
+
+为了能够让随机游走起步，我们需要随机选取 $s_0,t_0\in[0,\cdots,q-1]$，然后计算 $g_0=g^{s_0}h^{t_0}$，并在三元组 $(g_i,s_i,t_i)$ 上定义随机游走：
+$$
+g_{i+1}=g_i\cdot m_{H(g_i)}\\
+s_{i+1}=s_i+a_{H(g_i)}(\ mod\ q)\\
+t_{i+1}=t_i+b_{H(g_i)}(\ mod\ q)
+$$
+这样一来，可以确定如下关系：
+$$
+g_i=g^{s_i}h^{t_i}
+$$
+
+当我们有 $m$ 个处理器时，就可以从不同的起点开始，使用相同的算法，当两个处理器(或同一处理器)遇到同一个之前出现的元素时，就可以得到方程 $g^{s_i}h^{t_i}=g^{s_j}h^{t_j}$，然后就可以计算 $x$：
+$$
+x=\frac{s_i-s_j}{t_j-t_i}\ mod\ q
+$$
+> 自己推导的
+
+预计在 $O(\sqrt{\pi q/2}/m)$ 次迭代后，一个碰撞能够被发现，DLP也随之被解决，但是这也意味着需要存储每个处理器产生的所有结果（毕竟要比对的嘛），需要巨量的存储空间 $O(\sqrt{\pi q/2})$
+
+**如何降存储？**
+存储可以降到任何需要的值。看不懂看不懂，原文贴下面了：
+Moreover the storage can be reduced to any required value as follows: We define a function $d$ on the group, $d : G \rightarrow \{0, 1\}$ such that $d(g) = 1$ around $1/{2^t}$ of the time. The function $d$ is often defined by returning $d(g) = 1$ if a certain subset of $t$ of the bits representing $g$ are set to zero for example. The elements in $G$ for which $d(g) = 1$ will be called *distinguished*.
+It is only the distinguished group elements which are now transmitted back to the central server, which means that we expect the deterministic random walks to continue another $2^t$ steps before a collision is detected between two deterministic random walks. Hence, the computing time now becomes $O(\sqrt{\pi q/2}/m+2^t)$ and storage becomes $O(\sqrt{\pi q/2}/2^t)$. Thus, storage can be reduced to any manageable amount, at the expense of a little extra computation.
+
+**尝试理解：（应该没错）：**
+
+1. 这个 $d(g) = 1$ 中的 $g$ 并不是指上面生成元那个 $g$，而是一个通用符号，就像 $f(x)$ 中的 $x$ 一样
+2. 基于 1，这样我们把输入的 $g$ 转化为 bit 表示，然后取其中的 $t$ 个 位置（这些位置事先确定的），如果这 $t$ 个 bit 全为 0，那么 $d(g)=1$，否则 $d(g)=0$。这样一来 $\Pr [d(g) = 1]=1/2^t$，而满足这些条件的元素我们就称为 *distinguished*。
+3. 只存储可以可区分的群元素（注意没说不计算），这样一个元素被发现发生碰撞时，就已经做过了 $2^t$ 次计算
+   > 有种我已经把 $2^t$ 次计算的功下了，找到碰撞那是必然的感觉
+4. 这样时间就涨到 $O(\sqrt{\pi q/2}/m+2^t)$, 但是存储直接降到 $O(\sqrt{\pi q/2}/2^t)$
+
+## [Number 36: Index Calculus Algorithm](https://bristolcrypto.blogspot.com/2015/06/52-things-number-36-index-calculus.html)
+
+**What is the objective?**
+index calculus attack 还是尝试解决 DLP。思路：
+将目标值转为一些元素的幂的乘积，这些值的对数是已知的，最后利用对数定律求出目标值
+
+**How does it work?**
 
 

@@ -241,3 +241,55 @@ Index Calculus算法通过离散对数转化为和的形式找出离散对数的
 该算法不得不说一声通用，但是不可能每个阶段都很轻松
 > $r$ 大了，离线阶段算的就多；$r$ 小了，线上阶段算的就多（$y$ 得多试好多次）
 
+## [Number 37: The Number Field Sieve](https://bristolcrypto.blogspot.com/2015/06/52-things-number-37-number-field-sieve.html)
+
+> Continue the mathematical attacks with the ***NFS*** algorithm.
+
+数域筛法 (the Number Field Sieve, NFS) 是目前已知最有效的因式分解算法。
+它的运行时间取决于要分解数字的大小，而不是其因子的大小
+> 啊？不是后者更好吗？
+
+NAF 基于同余平方理论（congruent squares）：如果 $x^2=y^2\ mod\ N$，那么 $gcd(x-y,N)$ 就是 $N$ 的一个非平凡因子。
+
+1. 选择两个多项式 $f_1$ 和 $f_2$
+   1. 本原 (monic)，不可约（irreducible）
+   2. degree 分别为 $d_1$ 和 $d_2$
+   3. 令 $m\in Z$ 为一个共同根，即 $f_1(m)=f_2(m)=0(mod\ N)$
+   4. 令$\theta_1,\theta_2\in C$ 分别为 $f_1$ 和 $f_2$ 的复数根 (complex roots)
+2. 构建两个代数数域 (algebraic number fields) $Z[\theta_i]=Q[\theta_i],i=1,2$
+   > 这其实也是俩数环（number ring），乘法操作就是多项式乘法
+   > $Q$ 好像没有用到？
+3. 定义将 $\theta_i$ 映射到 $m$ 的同态映射 $\phi_i:Z[\theta_i]\rightarrow Z_N$
+   > 也就是说，$\phi_i(\theta_i)=m$
+4. NAF 算法目标是从两个数环中找到两个平方 $\gamma_1^2$ 和 $\gamma_2^2$，使得
+    $$
+    \gamma_1^2=\prod_{(a,b)\in S}(a-b\cdot \theta_1)\\
+    \gamma_2^2=\prod_{(a,b)\in S}(a-b\cdot \theta_2)
+    $$
+    其中$\gamma_1\in Z[\theta_1],\gamma_2\in Z[\theta_2]$
+    $S$ 就是一个互质整数对 $(a,b)$ 的有限集合
+5. 为了找到这么一个集合，我们对 $a-b\cdot \theta_i$ 进行筛选，观察其在一些代数基数上是否平滑
+   > 说得很抽象啊
+   > In order to find such a set $S$, we will sieve the elements of the form $a-b\cdot \theta_i$ for pairs of $(a,b)$ such that $a-b\cdot \theta_i$ is smooth over some algebraic factorbase.
+   > 找到 $S$ 的速度决定了算法的效率
+6. 接下里就是提取 $\gamma_i^2$ 的平方根 $\gamma_i$
+   > 可以使用 Couveignes [1] and Montgomery [2] 算法
+   > [1] Couveignes, Jean-Marc. "Computing a square root for the number field sieve." The development of the number field sieve. Springer Berlin Heidelberg, 1993. 95-102.
+   > [2] Montgomery, Peter L. "Square roots of products of algebraic numbers." Mathematics of Computation (1993): 567-571. APA
+7. 一旦求出平方根，就可以利用同态求得
+    $$
+    \phi_1(\gamma_1)^2=\phi_2(\gamma_2)^2\ mod\ N
+    $$
+    从而得到 $gcd(\phi_1(\gamma_1)-\phi_2(\gamma_2),N)\neq 1,N$
+
+> 不怎么看懂但是大受震撼
+
+## [Number 38: What is the difference between a covert channel and a side-channel?](https://bristolcrypto.blogspot.com/2015/06/52-things-number-38-what-is-difference.html)
+
+隐蔽信道和侧通道是信息泄漏通道的两种类型。
+
+### Covert Channel
+
+
+
+### Side Channel

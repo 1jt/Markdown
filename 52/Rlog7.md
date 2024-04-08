@@ -187,5 +187,57 @@ index calculus attack 还是尝试解决 DLP。思路：
 将目标值转为一些元素的幂的乘积，这些值的对数是已知的，最后利用对数定律求出目标值
 
 **How does it work?**
+如果已知 $L_i=\log_g(x_i)$，且可将未知的 $h$ 写为 $h=x_1^{a_1}\cdots x_r^{a_r}$，那么就可以得出：
+$$
+\log_g(h)=a_1L_1+\cdots+a_rL_r
+$$
 
+**Terms:**
+
+- "offline computation" / "precomputation" : 每个群只需要进行一次的操作
+- "online computation" / "everytime" : 每次需要解决 DLP 时的操作
+
+**Steps:**
+
+1. Choose a Factor Base
+   *(Precomputation, basically free)*
+   就是选择一组底数（factor base） $b_0=g,b_1,\cdots,b_r\in G$，也就是上述的 $x_i$
+   但是选多少？
+   这个我们操作的组有关系，$r$ 小，线上操作就多，$r$ 大，线下操作就多，这是一个 trade-off
+   怎么选？
+   一般选 $-1$ 和 前 $r$ 个素数，这往往会使线上计算更加高效
+   > 就是 $\{-1,2,3,5,7,11,\cdots,p_r\}$
+2. Find relations between the DLPs of the Factor Base elements.
+   *(Precomputation, expensive but **very parallel**)*
+   该步骤目的是找到这些关系
+   $$
+   g^k\ mod \ q = (-1)^{e_0}2^{e_1}3^{e_2}\cdots p_r^{e_r}
+   $$
+   通过取对数，可以转换为线性关系，最后找到 $r$ 个这样的关系（说白了就是取 $r$ 次 $k$）
+   此步骤有点玄学
+   > 原文：Using whatever techniques we can (generally just taking arbitrary products and hoping to get lucky!)
+
+   $r$ 越大，这里操作也就越多，和上面对应起来了
+   但是每个 $g^k$ 都是独立的，所以可以让每个进程负责一个，即很容易实现并行计算
+3. Solve the Factor Base DLPs
+   *(Precomputation, relatively cheap)*
+   我们对这 $r+1$ 个关系（还有一个 $\log_g(g)=1$）,最后可以用一个矩阵求解器得到 $r+1$ 个 等价关系
+   > 也就是找到了 $L_i=\log_g(x_i)$
+4. Write $h$ as a product of factor base elements
+   *(Online, expensive but very parallel)*
+   该步骤目的是尝试找到一个 $y$ 和 一系列 $a_i$，和离线阶段得到的关系组成以下的等式：
+    $$
+    hg^y=b_1^{a_1}\cdots b_r^{a_r}
+    $$
+    答案也就呼之欲出：
+    $$
+    \log_g(h)=-y+\sum_{i=1}^r a_iL_i
+    $$
+    问题来到了：如何找到这个 $y$ ？
+    > 是的，只能试，我们取的因子基数是小素数，所以试起来相对比较容易
+
+**Conclusion:**
+Index Calculus算法通过离散对数转化为和的形式找出离散对数的结果。它通过建立一个已知的表（因子基数库）来解决这个问题，然后找到一个与目标相关的等式将目标写成这种形式。
+该算法不得不说一声通用，但是不可能每个阶段都很轻松
+> $r$ 大了，离线阶段算的就多；$r$ 小了，线上阶段算的就多（$y$ 得多试好多次）
 

@@ -283,13 +283,3 @@ NAF 基于同余平方理论（congruent squares）：如果 $x^2=y^2\ mod\ N$�
     从而得到 $gcd(\phi_1(\gamma_1)-\phi_2(\gamma_2),N)\neq 1,N$
 
 > 不怎么看懂但是大受震撼
-
-## [Number 38: What is the difference between a covert channel and a side-channel?](https://bristolcrypto.blogspot.com/2015/06/52-things-number-38-what-is-difference.html)
-
-隐蔽信道和侧通道是信息泄漏通道的两种类型。
-
-### Covert Channel
-
-
-
-### Side Channel

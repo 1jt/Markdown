@@ -79,6 +79,32 @@ Timing attacks. 这是个有争议，因为它是最适合但也是入侵最浅�
 
 ## [Number 40: What is normally considered the difference between SPA and DPA?](https://bristolcrypto.blogspot.com/2015/07/52-things-number-40-what-is-normally.html)
 
-电磁(Electronmagnetic, EM)功率分析攻击被划分成两种类型的攻击，简单功率分析(SPA)或者差分功率分析(DPA)。这两种攻击要么使用电磁要么使用能量记录设备，但是它们在分析能量数据的数量和方法上有本质的不同。
+电磁(Electronmagnetic, EM)或功率分析攻击（Power **or** Electromagnetic analysis attacks）被划分成两种类型的攻击，简单功率分析(Simple Power Analysis, SPA)和差分功率分析(Differential Power Analysis, DPA)。这两种攻击都是要么使用电磁记录设备要么使用功率记录（power traces）设备，但是它们在使用功率记录数据的数量和分析这些记录的方法上有本质不同。
+> Both of these types of attack work using either electromagnetic or power traces of a device but vary fundamentally in the number of power of traces they require and how these traces are analysed. Before examining the differences between these attacks, it is worth looking at what a po
 
-在检查这些攻击的不同之处之前值得说明的是power/EM攻击是什么。
+首先说明一下 功率/电磁记录（power/EM trace）是什么？
+> 以下的 power 翻译成 功率 或者 能量
+> 以下的 switch 翻译成 开关 或者 电路转换
+
+### Power Trace
+
+> 这些我认为都是科普
+
+CMOS（互补式金氧半导体，一种集成电路的设计工艺）的电路功率要么是静态的要么是动态的。静态功耗是指电路静止时损耗的功率（即没有发生电路转换），这时功率是非常小的。动态功耗是电路中 0和1 或 1和0 之间发生切换所消耗的功率。所以动态功耗是电路里能量消耗的最大贡献者，而消耗多少往往取决于正在处理的数据。
+动态能量损耗却决于两个因素。第一个就是电容充电电流（capacitance charging current），第二个是短路电流（short-circuit current）。每个CMOS单元都有一个负载电容连接到单元的输出。该负载电容包括连接单元到后续单元的电线，以及单元的输入电容。
+
+一个 CMOS 单元使得电压上升 $V_{dd}$ (电容充电) 需要消耗的能量是 $P=\alpha f C_l V_{dd}^2$，其中 $\alpha$ 是每个时钟内发生 $0\rightarrow 1$ 的电路的数量。当电路有一个从 $1\rightarrow 0$ 的变化时，电流通过 NMOS 从 $C_l$ 到 $gnd$ 而不是 $V_{dd}$。第二部分能量消耗的贡献就是短路电流。当 PMOS 和 NMOS 晶体管都传导时， $0\rightarrow 1$ 和 $1\rightarrow 0$ 都会发生短路电流，尽管这种情况很少见。此时能量消耗公式是 $P_{sc}=\alpha f V_{dd}I_{peak}t_{sc}$，其中 $I_{peak}$ 是当前转换的峰值，$t_{sc}$ 是短路存在的时间。[1]
+> [1] Mangard, Stefan, Elisabeth Oswald, and Thomas Popp. Power analysis attacks: Revealing the secrets of smart cards. Vol. 31. Springer Science & Business Media, 2008.
+
+理解动态功耗的这两点，我们可以看到所有 $1\rightarrow 0$ 和 $0\rightarrow 1$ 的转换都会通过短路电流消耗电能，而从  $0\rightarrow 1$ 的切换会因为给电容负载充电而消耗更多的电能。所以如果**我们能测量能量消耗**（或者测量电磁场，因为不同强度的电流将产生等方差的电磁场，所以测量电磁场也能够测量功率消耗），**那么我们就知道设备里面有多少次电路转换**。首先，如果允许我们确定一个特定的操作(例如，乘法器可能会比异或门需要更多的开关)，其次，更重要的是，该操作操作的数据可能会影响转换次数，所以确定操作和转换次数，就可以确定操作的数据。
+
+### SPA and DPA Attacks
+
+SPA 攻击和 DPA 攻击之间的主要区别在于所需的 Trace 数量。SPA 通常需要一条或者很少几条，而 DPA 需要很多。他们利用动态设备功耗的方式也不同，SPA 攻击可以识别一组操作序列，然而它们还可以利用数据依赖关系，例如在模板攻击的情况下。针对 RSA 中二进制展开的平方和乘法算法（模指数算法）的 SPA 攻击就说明了这一点。如果一个二进制指数是0，那么结果会进行平方；如果是1，结果就是平方之后再乘底数。在单条跟踪记录中查看它，可以看到平方操作的形状或者平方加上乘法操作的形状，从而将键的每个位读取为0或1。这个漂亮的攻击只需要一个记录来观察能量消耗，这就是SPA攻击。
+
+另一方面，DPA 攻击通过使用多条跟踪和统计技术仅利用功耗的数据依赖性元素。攻击专注于功耗的数据依赖性，并通过创建给定数据将有多少切换（以及因此功耗的变化）的假设来工作。这些假设称为泄漏模型，通常是汉明权重或汉明距离。如果这个泄漏模型是正确的，那么功率轨迹应该可以根据它显示正在处理的信息，尽管在现实中，这总是与干扰 数据/功率 关系的噪声相结合。在DPA攻击中，**可以通过估计被操作的秘密数据值，并根据泄漏模型对这些值的表示查看是否与许多不同的功率跟踪相关，从而确定被操作的秘密数据值**。因此，DPA攻击根据噪声水平和测量精度的不同，需要跟踪的数量可以从50到数千不等。
+
+
+
+
+

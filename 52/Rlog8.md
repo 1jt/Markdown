@@ -104,7 +104,31 @@ SPA 攻击和 DPA 攻击之间的主要区别在于所需的 Trace 数量。SPA 
 
 另一方面，DPA 攻击通过使用多条跟踪和统计技术仅利用功耗的数据依赖性元素。攻击专注于功耗的数据依赖性，并通过创建给定数据将有多少切换（以及因此功耗的变化）的假设来工作。这些假设称为泄漏模型，通常是汉明权重或汉明距离。如果这个泄漏模型是正确的，那么功率轨迹应该可以根据它显示正在处理的信息，尽管在现实中，这总是与干扰 数据/功率 关系的噪声相结合。在DPA攻击中，**可以通过估计被操作的秘密数据值，并根据泄漏模型对这些值的表示查看是否与许多不同的功率跟踪相关，从而确定被操作的秘密数据值**。因此，DPA攻击根据噪声水平和测量精度的不同，需要跟踪的数量可以从50到数千不等。
 
+## [Number 41: Are all side-channels related to power analysis?](https://bristolcrypto.blogspot.com/2015/07/52-things-number-41-are-all-side.html)
 
+Of course not，所以这章其实是介绍几种测信道攻击。叙述原则遵循 KISS (["Keep it simple, stupid!"](https://en.wikipedia.org/wiki/KISS_principle)) 原则
 
+SCA 利用的信息来源是密码算法的物理实现，而不是像传统攻击一样针对目标的理论弱点。功率分析是最常见的一种，但不代表只有这么一种。当然想穷举所有的侧信道攻击是不现实的，但是这里列举了几种最常见最聪明的：
+
+- **Power consumption**：设备的瞬时功耗会泄露处理值的相关信息，例如其汉明权重。
+  > 例子：[Mangard's attack on the AES key schedule](https://link.springer.com/chapter/10.1007/3-540-36552-4_24)
+- **Execution time**：这类攻击利用了算法运行时间上与数据相关的差异。例如之前说过的[模幂](https://en.wikipedia.org/wiki/Modular_exponentiation)算法中的[平方和乘法](https://en.wikipedia.org/wiki/Exponentiation_by_squaring)操作。
+  > 例子：[Kocher's timing attack on RSA](https://www.rambus.com/timing-attacks-on-implementations-of-diffie-hellman-rsa-dss-and-other-systems/)
+  > 注意：即使是恒定时间的算法也可以被 [power attack](https://eprint.iacr.org/2011/236.pdf) 攻击
+- **Electromagnetic radiation**：电磁辐射测量起来比较棘手，攻击手段和功率攻击类似。
+  > 例子：引用量最大的 [EMR](https://link.springer.com/chapter/10.1007/3-540-44709-1_21)
+- **Other**：SCA 的目标是不受限制的，以下是一些有趣的切入点：
+  - 对 RSA 的声学攻击 ([acoustic attack](https://eprint.iacr.org/2013/857))
+  - 利用计算机 LED 发出的可见光 ([visible light](http://www.applied-math.org/optical_tempest.pdf)) 的攻击
+  - 对智能手机触摸屏上的污点攻击([smudge attack](https://dl.acm.org/doi/10.5555/1925004.1925009))
+  - 利用[错误信息](http://archiv.infsec.ethz.ch/education/fs08/secsem/Manger01.pdf)发动的攻击，例如 padding oracle attack
+      > 教材 98 页
+
+这么多漏洞着实让人后怕，但是这也是密码学的魅力所在。SCA 很大程度上是一个猫捉老鼠的游戏（cat-and-mouse game），研究员通常会推荐一些方法来避免重大的泄露（当然能不能全防住就不清楚了）。
+> 《[猫鼠游戏](https://www.bilibili.com/bangumi/play/ep251429?theme=movie&spm_id_from=333.337.0.0)》，汤姆汉克斯和小李子演的，很不错。
+
+## [Number 42: Look at your C code for Montgomery multiplication above; can you determine where it could leak side channel information?](https://bristolcrypto.blogspot.com/2015/07/52-things-number-42-look-at-your-c-code.html)
+
+Montgomery 算法 C 语言实现（#23）
 
 

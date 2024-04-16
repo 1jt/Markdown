@@ -131,4 +131,25 @@ SCA 利用的信息来源是密码算法的物理实现，而不是像传统攻�
 
 Montgomery 算法 C 语言实现（#23）
 
+在正式开始之前，作者讲了一段很抽象的话，关于 DPA，假设，泄露模型以及中间值的关系，大概意思是：
+DPA 通过假设和泄露模型推导中间值，由中间值推秘密值，中间值可能直接就是秘密值（当然不可能表述的这么简单）
+> 原文：You will remember from there that SPA attacks use a single or very few traces and work by spotting trends in the pattern (such as timing or instruction sequences) while DPA attacks use many traces and aim to derive intermediate vales of an algorithm and thus the secret information by using hypotheses of the secret data and a correct leakage model. Before looking at the Montgomery multiplication algorithm then it is worth stating from the outset that if hypotheses of secret data and corresponding leakage models can be derived for the algorithm, DPA style attacks can be used to derive intermediate values which will mean that the algorithm will leak data being processed. If this data is therefore secret, we can already say that this algorithm is going to leak through using DPA style attacks.
 
+DPA 过于复杂，所以我们重点研究 SPA，根据算法流程分为四个步骤，重点关注条件语句和循环语句，因为这两个容易受时间攻击（timing attack）
+
+1. **The GCD Operation**
+   这步是使用二进制扩展 gcd 操作找到 $r^{-1}$ 与 $m'$ 使得 $rr^{-1}=1+mm'$，如果我们假设扩展 gcd 运算的算法在恒定时间内运行，那么我们就可以认为这种运算是安全的。（不就扩展欧几里得算法吗）
+2. **Transform the Multipliers**
+   这步是为了计算 $\bar{a}=ar\ mod\ m,\bar{b}=br\ mod\ m$，由于这是一个简单的运算，只要所需的运算和指令（如乘法器）在恒定时间内运行，就不太可能发生泄漏。
+   > 原文这步写的有问题
+3. **Montgomery Multiplication**
+   这是算法主体部分，计算 $t=\bar{a}\bar{b}$ 可以认为同上
+   第二阶段是计算 $u= (t+(m't\ mod\ r)m)/r$，我们会遇到两个条件语句：
+   1. *if* (ulo < tlo) *then* uhi = uhi + 1;
+      由于我们在 64 位架构上实现的是 128 位，因此允许有一个进位，因此，通过观察执行时间或功率跟踪，可以了解是否执行了这个条件，从而了解这些 ulo 是否高于 tlo。
+   2. *if* (ov > 0 || ulo >= m) *then* ulo = ulo - m;
+      根据这步执行与否可以判断 u 实际上是否大于 m
+4. **The Inverse Transformation**
+   计算 $ur^{-1}\ mod\ m$，同1，2
+
+## [Number 43: Describe some basic (maybe ineffective) defences against side channel attacks proposed in the literature for AES](https://bristolcrypto.blogspot.com/2015/07/52-things-number-43-describe-some-basic.html)

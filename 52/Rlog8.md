@@ -153,3 +153,33 @@ DPA 过于复杂，所以我们重点研究 SPA，根据算法流程分为四个
    计算 $ur^{-1}\ mod\ m$，同1，2
 
 ## [Number 43: Describe some basic (maybe ineffective) defences against side channel attacks proposed in the literature for AES](https://bristolcrypto.blogspot.com/2015/07/52-things-number-43-describe-some-basic.html)
+
+> 同样适用于其它密码算法
+
+### Sidechannel defences: Why?
+
+对于一个现代的密码学系统，我们需要严肃对待，这意味着我们需要某种形式的安全证明（给我一个不能拒绝的理由）。就拿 AES 举例，如果对手不知道密钥，那么它的行为就与随机排列无异。但是如果从侧信道的角度去看，可能就没那么简单了。诚然，我们希望能够设计出一种完全不受侧信道攻击影响的实现方式，但是，这实际上就意味着实现过程必须是完全孤立的，即绝对没有输出流，这就会使实现变得毫无意义。
+> 有点像《Bleach》里的“完美论”，追求完美，但不可能完美，因为完美=没有意义
+> ![Alt text](assets/Rlog8/image.png){: width="300px"}![Alt text](assets/Rlog8/image-1.png){: width="300px"}![Alt text](assets/Rlog8/image-2.png){: width="300px"}
+
+那我们转换思路：也许我们可以确保，无论我们做什么，AES 实现是否通过侧信道泄漏信息都无关紧要?（it doesn't matter）
+这就引出了一个新领域：泄露弹性密码学（leakage resilient cryptography），这确实是一个非常强的安全需求。在这些条件下(这种情况很少)确保安全的方案往往比那些避免(/忽略)问题的方案效率低得多。因此在设计时必须权衡利弊，在实践中，我们倾向于使用假定 AES 不会泄露任何信息的方案，并将其与包含对某些较简单的侧信道攻击具有防御功能的实现相结合。目的是使攻击成本超出保护信息的价值即可。
+
+### Some Basic Defences
+
+有鉴于此，让我们考虑几种基本防御手段，以抵御一些不太复杂的侧信道攻击：
+> 有些技术可能很容易被忽略，所以请将本文视为解释一般概念，而不是提供任何明智的建议!
+
+*Attack*: **Timing Attack**
+*Weakness*:有些系统的运行时间会因输入而异。因此，通过观察系统响应所需的时间，我们可以了解到一些关于密钥/输入的信息。
+*Defence*: **Constant time implementations.** 对抗时间攻击最好的方法就是确保运行需要花费常数时间，如今的大多数实现都是常数时间的。这可能在硬件上不是很难，但是在软件上却很难，因为微代码（内部处理器的程序）通常是商业机密。
+
+*Attack*: **Power Analysis (DPA,SPA)**
+*Weakness*: 某些实现方法的功耗与关键材料相关，通常是由于存储值时的汉明距离造成的。更多信息，请阅读前两周篇。
+*Defence*: （1）**Masking**：不是直接使用 S 盒，而是先用掩码作用一遍再输入 S 盒，这样就算分析出来也不能直接将结果与实际值对应上，掩码方案越复杂，实现越难，当然抵抗力也越强 （2）**Shuffling**： 敌手可以攻击的前提肯定是知道了算法的实现细节，如果我们在实现过程中打乱 S 盒的顺序（通过某种秘密排列），对手就不会知道它们的读数与内部密钥材料的对应关系。这种方法的一个变种是故意使用非确定性，允许处理器自行对某些指令集合重新排序。（感觉这步有点不地道，没遵循算法公开原则）
+
+*Attack*: **Cache-flooding**
+*Weakness*: 如果处理器的高速缓存中已经存在相应的单元，那么使用查找表（例如 SBox）的实现方式或多或少都会提高效率。通过将大部分查找表推出缓存，攻击者可以观察到适当的单元是否被调用，从而泄露信息。如果可以观察到加载高速缓存的成本，还可以通过时序攻击或功耗分析进行观察。（怎么感觉攻击者在直接干预了？这还是侧信道吗）
+*Defence*: **Dont use lookup tables on secret data!**。使用查找表的出发点是好的，但是建议不要出发。而且 AES 的 S 盒可以输入一个比特就能算，所以不用查找表影响其实不大，但是 DES 就没那么实用了。
+
+## [Number 44: Describe some basic (maybe ineffective) defences against side channel attacks proposed in the literature for ECC.](https://bristolcrypto.blogspot.com/2015/08/52-things-number-44-describe-some-basic.html)

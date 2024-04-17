@@ -32,3 +32,7 @@ adj. 全部的；所有的；（几乎）无所不包的；详尽的； n. （�
 **state from the outset:**
 开宗明义，一开始 就说
 （别用 firstly 了）
+
+**drastically：**
+adv. 激烈地； 网络释义： 彻底地；大幅度地；大大地
+（别用 greatly 了）

@@ -163,7 +163,8 @@ DPA 过于复杂，所以我们重点研究 SPA，根据算法流程分为四个
 > ![Alt text](assets/Rlog8/image.png){: width="300px"}![Alt text](assets/Rlog8/image-1.png){: width="300px"}![Alt text](assets/Rlog8/image-2.png){: width="300px"}
 
 那我们转换思路：也许我们可以确保，无论我们做什么，AES 实现是否通过侧信道泄漏信息都无关紧要?（it doesn't matter）
-这就引出了一个新领域：泄露弹性密码学（leakage resilient cryptography），这确实是一个非常强的安全需求。在这些条件下(这种情况很少)确保安全的方案往往比那些避免(/忽略)问题的方案效率低得多。因此在设计时必须权衡利弊，在实践中，我们倾向于使用假定 AES 不会泄露任何信息的方案，并将其与包含对某些较简单的侧信道攻击具有防御功能的实现相结合。目的是使攻击成本超出保护信息的价值即可。
+这就引出了一个新领域：抗泄露密码学（leakage resilient cryptography），这确实是一个非常强的安全需求。在这些条件下(这种情况很少)确保安全的方案往往比那些避免(/忽略)问题的方案效率低得多。因此在设计时必须权衡利弊，在实践中，我们倾向于使用假定 AES 不会泄露任何信息的方案，并将其与包含对某些较简单的侧信道攻击具有防御功能的实现相结合。目的是使攻击成本超出保护信息的价值即可。
+> 感觉也可以翻译成弹性泄露密码学，表示安全要求可以适当变化
 
 ### Some Basic Defences
 
@@ -183,3 +184,87 @@ DPA 过于复杂，所以我们重点研究 SPA，根据算法流程分为四个
 *Defence*: **Dont use lookup tables on secret data!**。使用查找表的出发点是好的，但是建议不要出发。而且 AES 的 S 盒可以输入一个比特就能算，所以不用查找表影响其实不大，但是 DES 就没那么实用了。
 
 ## [Number 44: Describe some basic (maybe ineffective) defences against side channel attacks proposed in the literature for ECC.](https://bristolcrypto.blogspot.com/2015/08/52-things-number-44-describe-some-basic.html)
+
+首先澄清一下本章重点，仅考虑实现层面的对策，而不考虑硬件方面的，例如[双轨逻辑](https://www.sciencedirect.com/science/article/abs/pii/S0045790608000621)（Dual Rail Logic）或者位置安全（location security，比如将电脑打包塞入混凝土沉入海底以抵抗侧信道攻击，可以但没有意义）其次，说是 ineffective，但还是尽量 effective。
+
+一般来说， Elliptic curve cryptography (ECC) 在抵御侧信道攻击方面表现不错，但仍有一些问题值得考虑。
+
+### Scalar Multiplication
+
+密码学中大多数标量乘法都是很容易泄露信息的（就像 RSA 中的指数算法一样）。在 ECC 中一样，因为点加运算和倍点运算在行为上是不同的，因此在 RSA 中用到的技术在 ECC 中也是适用的。例如盲指数算法（exponent blinding）：对于每个标量乘法，选择一个值 $r$ 使得 $[a]P=[a+r]P$，其中 $[a]$ 是需要保密的值，P 是生成元。由于标量乘法只泄漏关于标量的信息，因此只有当我没想要保持标量机密时才需要应用这种技术。近年来，人们对椭圆曲线的创建进行了大量的研究，发现椭圆曲线对于倍点运算和点加运算可以拥有相同的操作，从而解决了这一问题。
+
+### Is a point on the curve?
+
+给定一个值 $x$，想知道其是否在曲线上，就需要用到 [Jacobi symbol](https://en.wikipedia.org/wiki/Jacobi_symbol) 来判断 $x^3+a\cdot x+b$ 是否是一个二次剩余。而雅可比符号的计算过程是变长的，因此可能会泄露 $x^3+a\cdot x+b$ 的值。（比如值是 1 或 -1 的话这个计算过程就相当快）。
+注意我们仅仅是对 $x^3+a\cdot x+b$ 是否是个平方数感兴趣，同时注意到当且仅当 $r^2\cdot(x^3+a\cdot x+b)$ 也是一个平方数时，$x^3+a\cdot x+b$ 也是一个平方数（$r$ 随机），利用这个技术，我们就可以利用 $r$ 来盲化 $x^3+a\cdot x+b$ 的值。
+
+### Theoretically secure
+
+虽然椭圆曲线在应对已知的侧信道攻击时无需太多帮助就能保证合理的安全性，但还是有可能通过秘密共享(secret share)(#19)某些方案来提高安全性。如果每个共享都是独立泄漏的，那么就有可能创建出对抗任意泄漏函数（包括那些只能在理论上发生而不能在实践中发生的泄漏函数）的可证明安全的方案。这一密码学领域被称为 "[抗泄漏密码学](http://users-cs.au.dk/stm/local-cache/KilPie10.pdf)"（Leakage Resilient Cryptography.）。
+> 感觉意思相通，所以 share 还有股票的意思
+
+## [Number 45: Describe some basic (maybe ineffective) defences against side channel attacks proposed in the literature for RSA.](https://bristolcrypto.blogspot.com/2015/08/52-things-number-45-describe-some-basic.html)
+
+保持简单原则，本章我们将讨论所谓的 “香草（vanilla）” RSA，即在加密中不适用随机性，并强调少量潜在的侧信道攻击与对策。
+
+（顺嘴提一下RSA）
+$3\leq e<\phi(N),ed=1(mod\ \phi(N)),c=m^e\ mod\ N,m=c^d\ mod\ N$
+
+### An SPA-Style Attack to Determine the Secret Key
+
+我们首先给出一个示例，说明如何在解密操作期间泄漏关于密钥 $d$ 的信息。幂指数算法的一个经典实现方法是*分支程序*（branching program），特点就是根据输入的不同算法的行为也会不同。（就是前面提了无数次的二进制幂指数（square and multiply））
+$d=\sum_{0\leq i\leq n}b_i2^i,b_i\in \{0,1\}$
+$$
+c^d=\prod_{0\leq i\leq n}c^{b_i2^i}
+$$
+
+- $ANS\leftarrow 1$
+- $fac\leftarrow c$
+- For $0\leq i\leq n$, do
+  - If $b_i=1$, then 
+    - $ANS\leftarrow ANS\times fac$
+    - $fac\leftarrow fac^2$
+  - Else
+    - $fac\leftarrow fac^2$
+- Return $ANS$
+
+两个分支的执行时间和能耗是不同的，因此可以通过观察执行时间来推断 $d$ 的值。
+这是一种 SPA，因为只需要一个 trace。
+为了阻止这种攻击，必须使算法的两个分支在攻击者看来是相同的，即平方和乘法后平方两个分支在运行时间和能源消耗方面表现相差无异。
+
+### An SPA-Style Attack to Determine the Plaintext
+
+如果我们想直接获取明文 $m$，而加密算法也是一个分支程序，且算法的行为与 $m$ 的值有关，那么我们可以通过观察执行时间或功耗来推断 $m$ 的值。就拿取模操作（modular reduction）来说，实现中我们不可能等到最后才模，肯定是中途就开始模，将值控制在一个相对较小的范围内，举一个生硬点的实现：
+
+- While $ANS\geq N$, do
+  - $ANS\leftarrow ANS-N$
+
+在加密的情况下，由于指数是已知的，因此根据运行时间的长短和耗电量的多少，会泄露有关基数 $m$ 的信息（参见 #42）。
+所以，为了防止这种攻击，我们需要确保对中间值取模的时候使用的时间与能耗是恒定的。（而且我们知道底数和指数，所以很容易就可以找到一个上界）
+
+### Preventing DPA-Style Attacks on the Secret Key
+
+尽管我们模糊了解密过程中依赖于 $d$ 的所有何分支，但是在解密过程中执行指数运算的精确细节仍将依赖于指数（以一种不太明显的方式）。所以，在多次解密后，解密密钥和操作时间或功耗之间的统计关系可能会逐渐浮现。因此，我们还需要防止更多微妙的 DPA 攻击（攻击者在大量trace 上利用统计技术来测试对密钥的假说）。
+
+为此，我们必须消除保密密钥与每次计算之间的直接依赖关系。这就需要盲化（blinding），即在不影响结果的情况下，在指数运算中注入一些随机噪音。在解密中，我们引入随机性：当 $3\leq d\leq \phi(N)$时，$d$ 是 $e$ 唯一的逆，但是我们可以去掉限制条件，随机取一个数 $r\in Z$ 并计算 $d'=d+r\phi(N)$。这时候 $c^{d'}=c^d\cdot c^{r\phi(N)}=c^d\ mod\ N$，所以我们可以用 $d'$ 来解密。而加法通常不是分支操作，因此在单次 trace 不会泄露 $d$ 的信息。如果每次解密都选择一个随机的 $r$，那么就可以防止 DPA 攻击。
+
+### Coppersmith's SPA-Style Attack to Determine the Plaintext
+
+这种攻击只适用于 $e$ 较小的情况（一般为了效率选择为 3）
+
+[Coppersmith](https://crypto.stanford.edu/~dabo/pubs/papers/RSA-survey.pdf) 指出一个定理：攻击者可以高效地找到 $e$ 阶整数多项式 $f$ 的所有模 $N$ 的 "小 "整数根，这里的 "小 "主要指绝对值小于 $N^{1/e}$。
+> an attacker can efficiently find all 'small' integer roots modulo $N$ of an integer polynomial $f$ of degree $e$, where small essentially means having absolute value less than $N^{1/e}$.
+
+显然，如果 $m$ 恰好很小，那么可以直接求解 $m^e=c\ (mod\ N)$方程，从而恢复明文。如果不是，但是 $m$ 的某些最高位（the most significant bits）泄露了，那我们可以写为 $m=m_k+m_u$，其中 $m_k$ 已知，$m_u$ 较小，并得到整数多项式 $f(X)=(m_k+X)^e-c$，它模 N 的小根可以通过 Coppersmith method 求出并关联到 $m_u$。因此，我们需要确保 $m$ 的比特不会因加密操作而泄露。
+
+为了防止这种攻击，还是使用盲化技术，但是这次是在明文上。在加密时，我们可以选择一个随机数 $r$ 并计算 $(rm)^e(mod\ N)$，将结果乘上 $r^{\phi(N)-e}$ 就可以得到正确的密文，而且幂运算的泄露与 $m$ 的值无关。
+> 所以和 SPA 有啥关系？
+
+总得来说，就是**泄露靠分支，防止靠盲化**。
+
+## [Number 46: What do correctness, soundness and zero-knowledge mean in the context of a Sigma protocol?](https://bristolcrypto.blogspot.com/2015/08/52-things-number-46-what-do-correctness.html)
+
+
+
+
+

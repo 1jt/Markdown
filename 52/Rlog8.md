@@ -221,7 +221,7 @@ $$
 - $ANS\leftarrow 1$
 - $fac\leftarrow c$
 - For $0\leq i\leq n$, do
-  - If $b_i=1$, then 
+  - If $b_i=1$, then
     - $ANS\leftarrow ANS\times fac$
     - $fac\leftarrow fac^2$
   - Else
@@ -261,10 +261,3 @@ $$
 > 所以和 SPA 有啥关系？
 
 总得来说，就是**泄露靠分支，防止靠盲化**。
-
-## [Number 46: What do correctness, soundness and zero-knowledge mean in the context of a Sigma protocol?](https://bristolcrypto.blogspot.com/2015/08/52-things-number-46-what-do-correctness.html)
-
-
-
-
-

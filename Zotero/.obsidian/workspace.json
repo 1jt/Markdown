@@ -48,7 +48,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "tag:#✅",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -65,7 +65,8 @@
               "state": {}
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -129,7 +130,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "horizontal",
@@ -145,15 +147,15 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "798f603869f115e9",
+  "active": "9b309533ccc34e00",
   "lastOpenFiles": [
+    "Notes/PIANO Extremely Simple, Single-Server PIR with Sublinear Server Computation.md",
+    "Notes/Eﬃcient Pre-processing PIR Without Public-Key Cryptography.md",
+    "Notes/Optimal Single-Server Private Information Retrieval.md",
     "Template/Mdnotes Default Template.md",
     "Template/Template1.md",
-    "Notes/Eﬃcient Pre-processing PIR Without Public-Key Cryptography.md",
     "Notes/assets/Pasted image 20240419154346.png",
     "Notes/assets",
-    "Notes/Optimal Single-Server Private Information Retrieval.md",
-    "Notes/PIANO Extremely Simple, Single-Server PIR with Sublinear Server Computation.md",
     "Pasted image 20240418180600.png",
     "Template/Templa1.md",
     "Template/新建 Markdown.md",

@@ -36,9 +36,20 @@ A client with small local storage wants to query the database, while **hiding it
 1. 在预处理模型中，探索重点为亚线性计算和不使用公钥加密下的 PIR 效率
 2. 预处理分为两种方式：
 	1. 全局（global, server-side）：
-		- Beimel et al. \[5\] : $O(n^{1/3})$ 带宽, $O(n/ \log^2 n)$ 计算, while consuming $O(n^2)$ server storage；还展示了一种无法比拟的信息论方案，$O(n^{1/2+\epsilon})$ 计算与带宽，$n^{1+\epsilon'}$ 服务器存储
+		- Beimel et al. \[5\] : （2-server） $O(n^{1/3})$ 带宽, $O(n/ \log^2 n)$ 计算, while consuming $O(n^2)$ server storage；还展示了一种无法比拟的信息论方案，$O(n^{1/2+\epsilon})$ 计算与带宽，$n^{1+\epsilon'}$ 服务器存储
 	2. 客户端（client-specific ）：
-		- 著名方案 PIANO，后续工作 Mughees et al. \[45\]：$\widetilde{O}(\sqrt{n})$ 带宽，$\widetilde{O}_{\lambda}(\sqrt{n})$ 服务器计算，
+		- 著名方案 PIANO\[56\]，后续工作 Mughees et al. \[45\]：（single-server） $\widetilde{O}(\sqrt{n})$ 带宽，$\widetilde{O}_{\lambda}(\sqrt{n})$ 服务器计算，$\widetilde{O}_{\lambda}(\sqrt{n})$ 客户端存储
+			1. 他们的预处理是让客户端流式下载整个数据库并动态更新客户端本地的状态来完成的，这种预处理的成本可以通过后续无限 的查询来摊销掉这个成本
+			2. 依赖的假设是单向函数（OWF），没有用到公钥
+
+### 方案对比
+
+![[Pasted image 20240424180704.png]]
+1. 查询次数不限
+2. 单服务器能直接扩展出相同性能的双服务器
+3. $n$ 是数据库大小，$m$ 是客户端数量
+4. 计算开销把客户端和服务器的都算进去了
+5. 服务器存储开销只计算额外存储空间
 ## Experimental
 
 ## Results and discussions

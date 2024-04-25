@@ -1,20 +1,28 @@
 {
   "database": "Zotero",
-  "noteImportFolder": "",
+  "noteImportFolder": "/Notes",
   "pdfExportImageDPI": 120,
   "pdfExportImageFormat": "jpg",
   "pdfExportImageQuality": 90,
-  "citeFormats": [],
+  "citeFormats": [
+    {
+      "name": "Format #1",
+      "format": "formatted-citation",
+      "cslStyle": "apa"
+    }
+  ],
   "exportFormats": [
     {
       "name": "Import #1",
       "outputPathTemplate": "{{citekey}}.md",
       "imageOutputPathTemplate": "{{citekey}}/",
-      "imageBaseNameTemplate": "image"
+      "imageBaseNameTemplate": "/assets/{{citekey}}/",
+      "templatePath": "Template/Template1.md",
+      "cslStyle": "apa"
     }
   ],
   "citeSuggestTemplate": "[[{{citekey}}]]",
-  "openNoteAfterImport": false,
+  "openNoteAfterImport": true,
   "whichNotesToOpenAfterImport": "first-imported-note",
   "exeOverridePath": "C:\\Users\\ljt\\Downloads\\pdfannots2json.Windows.x64\\pdfannots2json.exe"
 }

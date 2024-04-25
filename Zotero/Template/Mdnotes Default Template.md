@@ -6,11 +6,12 @@
 - 出处::{{publicationTitle}} 
 - 标签:: {{tags}}
 - 备注:: 
-***
 
+***
 {{abstractNote}}
 
-## Inroduction
+---
+## Summary
 
 ## Experimental
 
@@ -22,6 +23,6 @@
 
 - pdf::{{pdfAttachments}}
 
-- DOI::{{DOI}}
+- URL:: {{url}}
 
-- citekey::{{citekey}}
+- citekey:: {{citationKey}}

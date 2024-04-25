@@ -80,3 +80,56 @@ Sigma 协议是零知识的证明......并不存在！与人们在课本零知�
 ## [Number 47: What is the Fiat-Shamir transform?](https://bristolcrypto.blogspot.com/2015/08/52-things-number-47-what-is-fiat-shamir.html)
 
 > 看看如何把 Sigma 协议变成零知识的
+
+Sigma 协议可以让 Alice 向 Bob 证明一些事情，快速而使实用，但是要求双方同时在线。但是很遗憾，这个协议不是零知识的，而仅仅只是 honest-verifier zero-knowledge.
+
+### What is the Fiat-Shamir transform?
+
+The Fiat-Shamir transform 是可以将 Sigma 协议转换为非交互式证明的方法。这个方法是由 Fiat 和 Shamir 在 1986 年提出的。这就意味着 Alice 可以直接向 Bob 发送邮件就行了，而不需要实时在线；而 Bob 也不用立刻就读，也无需向 Alice 发送挑战。
+它还能让 Alice 把任何 Sigma 协议变成数字签名方案，从而断言 "知道这个 Sigma 协议秘密的人签署了该信息"。
+> "someone who knows the secret for this Sigma protocol has signed that message"
+
+ALice 只需创建一次签名，然后将其发布到公告板上，每个看到签名消息的人都可以检查签名，而无需联系 Alice 本人。零知识自然而然也就来了，因为 Bob 等人没必要再做任何事情了。
+> Fiat-Shamir transform 本身有点争议，有人说可以追溯到更早
+
+Sigma 能够通过四个算法（Commit, Challenge, Respond, Check）来实现：
+
+```fakecode
+Alice                                Bob
+-----                                -----
+co,st = Commit(secret,public)
+         ---------- co --------->
+                                     c = Challenge()
+         <--------- c  ----------
+r = Respond(st,c)
+         ---------- r  --------->
+                                         Check(co,c,r)
+```
+
+而在 Fiat-Shamir transform 中，Alice 会选择一个哈希函数 $H$，并用其创建自己的挑战：
+
+```fakecode
+Alice                                World
+-----                                -----
+
+co, st = Commit(secret,public)
+c = H(public,co)
+r = Respond(st,c)
+         ------ co,r ----------->
+                                     c = H(public,co)
+                                     Check(co,c,r)
+```
+
+> 本质思想就是不想让 Alice 随便控制挑战内容，之前是 Bob 选择挑战，现在是 Alice 自己用哈希函数生成挑战（这两个虽然是不同人完成的，但是均不受 Alice 控制）
+
+如果想签名一个消息，Alice 会将其添加到哈希函数中并发送消息：
+
+```fakecode
+Alice                                World
+-----                                -----
+c = H(public,co,m)
+r = Respond(st,c)
+ ------ m,co,r ----------->
+```
+
+如果 $H$ 是一个随机函数，那么挑战显然是均匀随机的，与爱丽丝的公开信息和承诺无关。安全性分析中认为 Alice 仅能把 $H$ 当作一个预言机，而不能直接访问其代码。

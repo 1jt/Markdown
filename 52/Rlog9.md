@@ -132,4 +132,33 @@ r = Respond(st,c)
  ------ m,co,r ----------->
 ```
 
-如果 $H$ 是一个随机函数，那么挑战显然是均匀随机的，与爱丽丝的公开信息和承诺无关。安全性分析中认为 Alice 仅能把 $H$ 当作一个预言机，而不能直接访问其代码。
+如果 $H$ 是一个随机函数，那么挑战显然是均匀随机的，与爱丽丝的公开信息和承诺无关。安全性分析中认为 Alice 仅能把 $H$ 当作一个预言机，而不能直接访问其代码。在这种情况下，Alice 在不遵循协议的情况下做出正确响应的概率(特别是当她不知道秘密时)与 $H$ 的范围的大小成反比。而这个概率不用多说了，小到可以忽略。
+
+这种安全性分析的方法叫做随机预言机模型（random oracle model，ROM）。有人会告诉你这么分析是有严重缺陷的，因为有一个人为的反例：即在 ROM 中安全的方案，对于任何实际的哈希函数 $H$ 来说都是不安全的。这个反例表明如果你努力去完成一个愚蠢的方案，那么你就会得到一个愚蠢的方案（？？？？？？他要不要听听他在说什么？）
+> there's an artificial counter- example of a scheme that is secure in the ROM but is insecure for any actual hash function $H$. What this counter-example shows is that if you go to enough effort to make a stupid scheme, you can end up with a stupid scheme.
+> 感觉他意思就是：人类做不出真正的随机，所以，以能做到随机为前提，再怎么分析出花儿来都毫无意义
+
+事实上， Fiat-Shamir transform 从 1986 年提出至今，依然完好无损，无人提出一个可行的攻击方案来针对 Fiat-Shamir 转换后的 Sigma 协议方案。
+
+## [Number 48: What is the purpose and use of a TPM?](https://bristolcrypto.blogspot.com/2015/09/52-things-number-48-what-is-purpose-and.html)
+
+> **T**rusted**P**latform**M**odule（可信平台模块）
+> 原文连这个解释都没有
+
+我们首先理解一下 TPM 设计出来是为了克服什么问题？
+答：信任（Trust）问题
+信任什么？
+我们知道运行在电脑上的内存和软件，它们可以通过操作系统直接访问到。所以如果密钥等秘密消息直接存储在内存中，并能被软件访问，那么如果一个攻击者获得操作系统级别的访问权限，那么他就可以获得所有秘密信息（比如直接从存储密钥的内存位置直接读取密钥）。
+
+有一个解决方案是令密钥永远不能直接存储在可以被软件访问到的内存里。但是！安全应用必须用到密钥，所以密钥必须能够以被使用的姿态出现，怎么做呢？
+一种方法是通过利用一个软件无法访问到的密钥来对内存中的密钥进行封装：例如，在一个单独的硬件上刻录密钥，并能利用该密钥执行某些加密操作，软件可以利用存储在硬件上的密钥进行各种操作，如将密钥包装后存储在内存中，但永远无法直接访问这个密钥。
+
+上述就是 TPM 作用的概述。
+一个 TPM 有一个 RSA 密钥对，被称为 存储根密钥（SRK, Storage Root Key），私钥部分完全保密。1）其它软件的密钥可以由 SRK 的私钥封装加密（这个过程被称为“绑定”（“binding”））；2）除了简单的封装，TPM 还可以将封装密钥与某些平台测量值（platform measurement，也可以翻译成平台度量？）绑定，只有当这些平台测量值与创建密钥时的值相同时，才能解除对这类密钥的封装。这个过程叫做密封（sealing）；3）TPM 还可用于生成加密密钥和 ；4）执行其他加密任务，其中一项任务被称为远程验证（remote attestation），它可以创建硬件和软件配置的哈希密钥摘要，允许第三方验证软件是否被更改过。
+> 这就是 use of a TPM
+
+这里真正需要理解的是，通过将安全性下沉到硬件级别，并确保将其交给一个独立的硬件，该硬件有自己的固件和电路，无法从外部进行更改，这样系统就不会暴露到软件漏洞下，因此更值得信赖。
+所以 purpose of a TPM 归结起来就是：克服信任软件完全可靠的问题。
+> To overcome the problem of trusting (or rather not trusting) software to be completely reliable.
+
+## [Number 49: Describe the basic ideas behind IPSec and TLS.](https://bristolcrypto.blogspot.com/2015/09/52-things-number-49-describe-basic.html)

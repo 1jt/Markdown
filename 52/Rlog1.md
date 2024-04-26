@@ -1,5 +1,7 @@
 # What did you learn？
 
+> 硬件方面的介绍
+
 ## [Number 1 : Different Types of Processors](https://bristolcrypto.blogspot.com/2014/10/52-things-number-1-different-types-of.html)
 
 - 通用处理器（general-purpose processor）

@@ -1,6 +1,6 @@
 # What did you learn？
 
-> Cryptographic Implementation Details'
+> 密码算法的优化方法
 
 ## [Number 21: How does the CRT method improve performance of RSA?](https://bristolcrypto.blogspot.com/2015/02/52-things-number-21-how-does-crt-method.html)
 

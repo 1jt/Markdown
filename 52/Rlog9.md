@@ -162,3 +162,37 @@ r = Respond(st,c)
 > To overcome the problem of trusting (or rather not trusting) software to be completely reliable.
 
 ## [Number 49: Describe the basic ideas behind IPSec and TLS.](https://bristolcrypto.blogspot.com/2015/09/52-things-number-49-describe-basic.html)
+
+Internet Protocol Security (IPsec) 和 Transport Layer Security (TLS) 都旨在为不安全网络环境中的双方建立一条安全信道。
+一般来说，通信双方都使用某种机制来建立私人会话密钥（预共享或密钥协商协议），并使用对称密钥加密技术完成大部分的通信。还有一些关于身份验证的细节，本章略过。虽然这两个在最终目的上有相似之处，但是它们在实现上有很大的不同。
+
+IPSec 位于 [OSI](https://en.wikipedia.org/wiki/OSI_model) 模型的网络层（network layer），旨在为两个终端提供完整性（integrity）、真实性（authenticity）和保密性（confidentiality）。由于它位于网络层，因此会对来自上层的数据进行盲目加密、MAC 和打包，然后再向下发送。这实际上在两个终端之间创建了一个虚拟网络链接，而无需确保终端应用程序已适当保护数据安全。这通常用于企业 VPN 解决方案，因为它是远程访问企业网络的快速解决方案。但缺点是，连接一旦建立，就很难限制应用程序使用该连接。
+
+而 TLS 则是在 OSI 模型的应用层（application layer）建立安全连接。我们看到，TLS 被大量用于确保 HTTPS、STARTTLS 等网络协议的安全，因此，每个连接/应用程序都将独立协商/建立安全连接。从安全的角度来看，这是非常有吸引力的，因为单个受损的通道不应该对其余通道产生任何影响。虽然 TLS 可以被视为一种更灵活的方法，但对于两个节点之间的大量连接而言，它确实会比 IPSec 产生一些开销。
+
+> 自己总结：IPSec主要用于保护网络通信的安全（目标宏大而数量稀少），而TLS主要用于保护应用程序通信的安全（数量众多且单体简单），所以IPsec也会更复杂一些
+
+## [Number 50: What is the BLS pairing-based signature scheme?](https://bristolcrypto.blogspot.com/2015/10/52-things-number-50-what-is-bls-pairing.html)
+
+这周看个签名方案：[BLS](https://www.iacr.org/archive/asiacrypt2001/22480516.pdf) pairing-based signature scheme
+
+这个方案使用了椭圆曲线上的 Weil pairing，本质上是曲线上阶数除以 $n$ 的点上的**双线性**形式（用乘法符号表示），取值为 $n$ 次统一根。
+> 看不懂思密达
+> essentially a bilinear form (with multiplicative notation) on points of order dividing $n$ on a curve, taking values in $n^{th}$ roots of unity.
+
+假设有一条椭圆曲线 $E/\mathbb{F}_{3^l}$，按照原论文中的符号进行计算。方案如下
+
+**KeyGen:** 令 $E/\mathbb{F}_{3^l}$ 为一条椭圆曲线，$q$ 是这条曲线阶数的最大素因子，令 $P$ 为线上一点且阶数为 $q$，并随机选取 $x\in\mathbb{Z}^*_q$，最后计算 $R=x\cdot P$，则公钥为 $(l,q,P,R)$，私钥为 $x$。
+
+**Sign:** 为了签名消息 $M\in\{0.1\}^*$，我们将 $M$ 映射到群 $<P>$ 上的一个点 $P_M$，这步参考文献（正文第一行）的 3.3节（如下），本质上是个哈希函数。令 $S_M=x\cdot P_M$，签名 $\sigma$ 为点 $S_M$ 的 $x$ 坐标，且 $\sigma\in\mathbb{F}_{3^l}$。
+> ![Alt text](assets/Rlog9/image-1.png){: width="600px"}
+
+**Verifiy:** 给定公钥 $(l,q,P,R)$，消息 $M$ 和签名 $\sigma$：
+
+- 在阶数为 $q$ 的曲线上找到一个点 $S$，其 $x$ 坐标为 $\sigma$，$y$ 坐标属于 $\mathbb{F}_{3^l}$。如果不存在这样的点，则拒绝该签名。
+- 设 $u=e(P,\phi(S))，v=e(R,\phi(h(M)))$，其中 $e$ 是曲线上的魏尔配对，$\phi$ 是一个 $E\leftarrow E$的同态，$h$ 就是上面提到的。
+- 如果 $u=v$ 或 $u^{-1}=v$ 则认为签名有效，否则拒绝签名
+  > 两个等式分别对应满足条件的 $y$ 和 $-y$
+
+## [Number 51: What is the security model for ID-based encryption, and describe one IBE scheme.](https://bristolcrypto.blogspot.com/2015/10/52-things-number-51-what-is-security.html)
+

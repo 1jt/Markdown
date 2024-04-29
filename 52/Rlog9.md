@@ -253,6 +253,7 @@ Boneh 和 Franklin 所给出的方案依赖于非退化 (non-degenerate) 双线�
 ## [Number 52: Pick an advanced application concept such as e-Voting, Auctions or Multi-Party Computation. What are the rough security requirements of such a system?](https://bristolcrypto.blogspot.com/2015/10/52-things-number-52-pick-advanced.html)
 
 在密码学中考虑的不仅是对遵守规则的玩家的安全，还有对**不遵守规则的玩家**的安全。让我们从投票、拍卖和多方计算的角度来研究这个问题。
+> 感觉这章内容很适合用于给小白普及密码学
 
 ### What we mean by these three applications?
 
@@ -276,6 +277,15 @@ Boneh 和 Franklin 所给出的方案依赖于非退化 (non-degenerate) 双线�
 
 刚刚说的虽然在搞事，但起码还是按照协议走的，无非是试图多走几步或者获得点额外信息。但是还有一类坏人，甚至不按规则行事，即不遵守协议。他们可能发送压根儿就是错误的信息，但这些信息 "看起来 "是有效的，但随后会对协议产生错误的结果。我们需要防范这种所谓的 "恶意 "行为。
 
+刚刚说的只是一个一个的坏人，但是在现实中，坏人甚至会拉帮结伙，他们会合作，他们会互相帮助，联合起来攻击这个系统。我们需要确定在我们的协议中可以容忍多大的坏人联盟。例如在 MPC 中，诚实占多数和不诚实占多数的情况有很大不同。对于诚实多数协议，我们可以确保诚实的各方最终总是得到有效的函数输出。而对于不诚实多数协议，我们无法阻止不诚实的一方终止每个人的协议。
+> （最后一句没太懂）For dishonest majority protocols we cannot stop a dishonest party from terminating the protocol for everyone.
 
+还有一种情况：
+我们需要防止出现谁先谁后的问题。这在学术中被称为 "公平性"（fairness）。例如，假设我们有一次选举，有三个投票人：A、B 和 C。假设选票是加密的，玩家 C 可能通过复制 A 的选票来确保 A 支持的候选人获胜（从而找出 A 投给了谁）。应防止这种情况发生。
 
+还有一个概念：
+在协议开始时，对手可以控制一组参与方，这就是所谓的静态对手（static adversary）；或者，随着协议的进行，敌手会决定它想贿赂哪些参与方，这就是所谓的自适应对手（adaptive adversary）。
 
+我们可以看到，在这种高级协议中，人们可能会有大量安全方面的顾虑，也确实会有许多安全方面的结果。事实上，每个应用领域都可能需要不同的安全属性。鉴于可能的应用协议种类繁多，这意味着密码学需要解决的问题永无止境；因此！
+
+***密码学博士生需要解决的问题也永无止境***。

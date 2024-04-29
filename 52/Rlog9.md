@@ -196,3 +196,86 @@ IPSec 位于 [OSI](https://en.wikipedia.org/wiki/OSI_model) 模型的网络层�
 
 ## [Number 51: What is the security model for ID-based encryption, and describe one IBE scheme.](https://bristolcrypto.blogspot.com/2015/10/52-things-number-51-what-is-security.html)
 
+### ID-based encryption
+
+在公钥密码体制中，如果 Alice 想给 Bob 发送消息，她需要 Bob 的公钥，而这往往是一个非常长的比特串。
+而在实际中，Alice 更想使用 Bob 的个人公开信息（如电子邮件地址或者名字）来加密消息，这样既不需要获取和记忆很长的字符串，而且也不需要验证其真实性（至少我们可以确定肯定不是 Charlie 的公钥）。为了实现这一点，我们就需要 ID-based encryption（IBE，基于身份的加密）。
+
+在 IBE 中，有一个实体叫做 私钥生成器（Private Key Generator，PKG），当 Bob 向 PKG 验证身份以后，他就可以拿他的 ID（例如电子邮箱）申请私钥，而 PKG 会根据 Bob 的ID 和主密钥计算出其私钥。这样 Alice 就可以使用 Bob 的 ID 来加密消息，而 Bob 可以使用私钥解密。
+但是这会产生一个问题，通过主密钥，PKG 可以对任何消息进行解密，这叫做密钥托管（key escrow），意思就是说你必须认为 PKG 不会读取你的消息或者你不在乎 PKG 会读取你的消息。在公司中，高级管理者一般都有权限读取下级的邮件，因此 IBE 方案在这种情况下是很恰当的。
+
+一个 IBE 方案应该包含四个算法：
+
+- **Setup**：输入安全参数，并输出（秘密）主密钥和（公开）系统参数，如信息和密文空间。
+- **Extract**：输入 ID 和主密钥，并返回与 ID 相对应的私钥
+- **Encrypt**：输入明文和 ID，并返回密文。
+- **Decrypt**：输入密文和私钥，并返回明文。
+
+### Security model
+
+Boneh 和 Franklin 在 2003 年提出一种 IBE [方案](https://courses.cs.vt.edu/~cs6204/Privacy-Security/Papers/Crypto/IBE-Weil-Pairing.pdf)。他们证明，在类似于 CDH 问题很难解决的假设下，他们的方案在随机预言机模型中是 IND-ID-CCA 安全的。这意味着（假设所有哈希函数都是随机预言机），任何 PPT 攻击者，在以下安全游戏中获胜概率都不会大于 1/2：
+> any attacker, running in polynomial-time with respect to the security parameter, wins the following security game with probability that is only negligibly (with respect to the security parameter) more than 1/2:
+
+**首先**，攻击者可以：
+
+- 请求任意 ID 对应的私钥
+- 请求解密任意 ID 下的任意密码文本。
+
+**然后**，攻击者选择两个消息 $m_0$ 和 $m_1$，一个从未请求过私钥的 ID ${ID}^*$，然后攻击者会收到一个密文 $c$，其由 ${ID}^*$ 加密 $m_b$ 而得到（$b$ 是随机选择的）
+
+**接着**，攻击者可以：
+
+- 请求与 ${ID}^*$ 之外任何 ID 对应的私钥
+- 请求解密除 $(c,{ID}^*)$ 之外任何 ID 下的任何密文
+
+**最后**，攻击者输出一个比特 $b'$，如果 $b'=b$ 则攻击者获胜。
+
+### An IBE scheme
+
+Boneh 和 Franklin 所给出的方案依赖于非退化 (non-degenerate) 双线性映射 $e:G_1\times G_1\rightarrow G_2$，其中 $G_1$（我们将运算写为加法） 和 $G_2$（我们将运算写为乘法） 是阶数为质数 $q$ 的群。他们用 Weil pairing 来实例化构建了方案，细节可以参考原文。重要的是双线性（bilinearity）：$e(aP,bQ)=e(P,Q)^{ab}$。
+
+方案大致如下：
+主密钥为某个非零 $s\in\mathbb{Z}_q$，ID 对应的私钥为 $sH(ID)$，$H$ 是一个哈希函数，它将比特串映射为 $G_1$ 的元素。有两个公共参数 $P,P_{pub}=s\cdot P\in G_1$。
+为了加密消息 $m$，选择一个随机字符串 $\sigma$ 并将 $m$ 与 $\sigma$ 的哈希值进行异或，从而创建 $c_m$。
+然后 $m$ 和 $\sigma$ 一起哈希得到一个非零元素 $r\in\mathbb{Z}_q$。
+接着计算 $e(H(ID),P_{pub})^r$，将其哈希并与 $\sigma$ 异或，得到密文 $c_{ID}$。
+三元组 $(rP,c_{ID},c_m)$ 就是密文。
+
+解密：
+私钥 $d=sH(ID)$ 与密文 $(U,V,W)=(rP,c_{ID},c_m)$
+首先计算 $e(d,U)$
+> 根据双线性：$e(d,U)=e(sH(ID),rP)=e(H(ID),s\cdot rP)=e(H(ID),P_{pub})^r$
+
+将其哈希并与 $V$ 异或，得到 $\sigma$；
+然后将 $W$ 与 $\sigma$ 的哈希异或，得到 $m$。
+为了验证，我们需要将 $\sigma$ 和 $m$ 哈希在一起看是否能得到 $r$，从而使 $U=rP$。
+
+## [Number 52: Pick an advanced application concept such as e-Voting, Auctions or Multi-Party Computation. What are the rough security requirements of such a system?](https://bristolcrypto.blogspot.com/2015/10/52-things-number-52-pick-advanced.html)
+
+在密码学中考虑的不仅是对遵守规则的玩家的安全，还有对**不遵守规则的玩家**的安全。让我们从投票、拍卖和多方计算的角度来研究这个问题。
+
+### What we mean by these three applications?
+
+#### Voting
+
+在投票中，投票者根据某种投票方案（得票最多者当选制（first-past-the-post）、替代投票制（alternative-vote）、赞同投票制（approval voting）或其他）选择候选人。投票应该保密，仅仅合法的投票者可以进行投票，每个候选人只能投一票，投票必须是有效的(例如必须投一个真正的候选人)，最终结果必须是正确的，且选民不能被强迫等等，诸如此类的安全需求不胜枚举。
+
+#### Auctions
+
+对于拍卖，我们可能希望竞价是不公开的，我们可能不信任拍卖师（auctioneer），可能有多个物品参与拍卖，有多个可能的最终价格，获胜出价/价格的选择将取决于某种算法，最终输出可能需要可审计。
+> 出价人是 bidder；拍卖师，拍卖商是 auctioneer
+
+#### Multi-Party Computation
+
+对于多方计算（我们指的是对一组各方的私人输入进行函数计算）来说，安全要求比较简单，我们只希望函数的输出被公开，而不希望输入被公开（根据输出可以计算出的除外）。不过，虽然这个目标比较简单，但其功能却比拍卖和投票更广泛，因为我们要求任何函数都应能够计算。
+
+### What makes these operations interesting？
+
+最大的特点就是坏人将会是协议的一部分。
+之前的加解密操作中，Alice 和 Bob 都是诚实的，坏蛋是协议外偷听的人。而在投票，拍卖和多方计算中，我们不可以相信任何人，坏人可以是想要多投几票的投票者，可能是想篡改结果的计票人，也可能是一个试图中标但是出价又不是最高的人，还可能是一个试图计算出未中标出价的拍卖师！
+
+刚刚说的虽然在搞事，但起码还是按照协议走的，无非是试图多走几步或者获得点额外信息。但是还有一类坏人，甚至不按规则行事，即不遵守协议。他们可能发送压根儿就是错误的信息，但这些信息 "看起来 "是有效的，但随后会对协议产生错误的结果。我们需要防范这种所谓的 "恶意 "行为。
+
+
+
+

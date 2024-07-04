@@ -184,7 +184,7 @@ IPSec 位于 [OSI](https://en.wikipedia.org/wiki/OSI_model) 模型的网络层�
 
 **KeyGen:** 令 $E/\mathbb{F}_{3^l}$ 为一条椭圆曲线，$q$ 是这条曲线阶数的最大素因子，令 $P$ 为线上一点且阶数为 $q$，并随机选取 $x\in\mathbb{Z}^*_q$，最后计算 $R=x\cdot P$，则公钥为 $(l,q,P,R)$，私钥为 $x$。
 
-**Sign:** 为了签名消息 $M\in\{0.1\}^*$，我们将 $M$ 映射到群 $<P>$ 上的一个点 $P_M$，这步参考文献（正文第一行）的 3.3节（如下），本质上是个哈希函数。令 $S_M=x\cdot P_M$，签名 $\sigma$ 为点 $S_M$ 的 $x$ 坐标，且 $\sigma\in\mathbb{F}_{3^l}$。
+**Sign:** 为了签名消息 $M\in\{0.1\}^*$，我们将 $M$ 映射到群 $\langle P\rangle$ 上的一个点 $P_M$，这步参考文献（正文第一行）的 3.3节（如下），本质上是个哈希函数。令 $S_M=x\cdot P_M$，签名 $\sigma$ 为点 $S_M$ 的 $x$ 坐标，且 $\sigma\in\mathbb{F}_{3^l}$。
 > ![Alt text](assets/Rlog9/image-1.png){: width="600px"}
 
 **Verifiy:** 给定公钥 $(l,q,P,R)$，消息 $M$ 和签名 $\sigma$：

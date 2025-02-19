@@ -76,6 +76,7 @@ xor=# CREATE FUNCTION checkxor_compare(bytea, anyarray) RETURNS boolean  AS '/us
 CREATE FUNCTION
 xor=# 
 ```
+PARALLEL SAFE
 
 6. 去用Check测试一下
 
